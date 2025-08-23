@@ -1,0 +1,81 @@
+:root {
+  --dark-bg: #121212;
+  --light-bg: #1E1E1E;
+  --off-white: #fcfaf7;
+  --white: #ffffff;
+  --yellow: #F6E05E;
+  --green: #48BB78;
+  --pink: #ED64A6;
+  --transparent-white: rgba(255, 255, 255, 0.1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Heebo', sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--off-white);
+  background-color: var(--dark-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.person-card {
+  background-color: var(--light-bg);
+  border: 1px solid var(--transparent-white);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.person-card:hover {
+  background-color: #2a2a2a;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--yellow);
+}
+
+.person-details h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--off-white);
+}
+
+.group-tag {
+  background-color: var(--transparent-white);
+  color: var(--pink);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+.important-thing {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.important-thing strong {
+    color: var(--green);
+}
