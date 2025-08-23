@@ -10,14 +10,22 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-container">
-        <header style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-            <img src="assets/logo.svg" alt="Luna Logo" style="height: 50px;">
-            <h1 style="font-size: 2.5rem; color: var(--yellow);">Luna</h1>
+    <div id="splash-screen">
+        <img src="assets/logo.svg" alt="Luna Logo" class="splash-logo">
+        <h1 class="splash-title">Luna</h1>
+        <p class="splash-tagline">Your personal relationship assistant.</p>
+        <button id="start-btn">Get Started</button>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <header>
+            <img src="assets/logo.svg" alt="Luna Logo" class="header-logo">
+            <h1>Luna</h1>
         </header>
         <main id="main-content">
             <!-- Main content will be rendered here by JavaScript -->
         </main>
+        <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
     </div>
     <script src="script.js"></script>
 </body>
