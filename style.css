@@ -118,6 +118,12 @@ body {
   border: 2px solid var(--yellow);
 }
 
+.person-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .person-details h2 {
   margin: 0 0 0.5rem 0;
   color: var(--off-white);
@@ -390,6 +396,77 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.detail-view-controls > div {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-button {
+    background-color: var(--transparent-white);
+    color: var(--yellow);
+    border: 1px solid var(--yellow);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+    background-color: rgba(246, 224, 94, 0.2);
+}
+
+.moment-item {
+    /* Existing styles */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.moment-content {
+    flex-grow: 1;
+}
+
+.moment-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.moment-controls button {
+    background: none;
+    border: 1px solid var(--transparent-white);
+    color: var(--yellow);
+    width: 50px;
+    padding: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.moment-controls .delete-moment-btn {
+    color: var(--pink);
+    border-color: var(--pink);
+    width: auto;
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+}
+
+.moment-edit-textarea {
+    width: 100%;
+    height: 90px;
+    background-color: var(--dark-bg);
+    border: 1px solid var(--yellow);
+    border-radius: 4px;
+    color: var(--off-white);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.5rem;
+}
+
 .delete-button {
     background-color: #e53e3e; /* Red */
     color: var(--white);
@@ -404,4 +481,74 @@ body {
 
 .delete-button:hover {
     background-color: #c53030; /* Darker Red */
+}
+
+/* UI/UX Polish */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--light-bg);
+    border-radius: 8px;
+}
+
+.empty-state h2 {
+    color: var(--yellow);
+}
+
+.empty-state p {
+    margin: 1rem 0 2rem 0;
+    font-size: 1.1rem;
+}
+
+.button-primary {
+    background-color: var(--green);
+    color: var(--dark-bg);
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.button-primary:hover {
+    transform: scale(1.05);
+}
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    color: var(--dark-bg);
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s, bottom 0.5s;
+}
+
+.toast.success {
+    background-color: var(--green);
+}
+
+.toast.error {
+    background-color: var(--pink);
+}
+
+.toast.hide {
+    opacity: 0;
+    bottom: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.people-hub, .person-detail-view, .form-view, .empty-state {
+    animation: fadeIn 0.4s ease-in-out;
 }
