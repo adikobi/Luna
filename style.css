@@ -200,3 +200,19 @@ button, input, textarea {
     color: var(--yellow);
     padding: 2rem;
 }
+
+/* --- Moment Search --- */
+.moment-search-container {
+    margin-bottom: 1.5rem;
+}
+
+.moment-search-container input {
+    width: 100%;
+    background-color: var(--light-bg);
+    border: 1px solid var(--transparent-white);
+    border-radius: 6px;
+    color: var(--off-white);
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+}

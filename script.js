@@ -140,14 +140,50 @@ async function startApp(user, db) {
         document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
     };
 
+    const renderFilteredMoments = (person, searchTerm = '') => {
+        const momentsListUL = document.querySelector('.moments-list');
+        if (!momentsListUL) return;
+
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const moments = person.moments || [];
+
+        const filteredMoments = moments
+            .map((moment, index) => ({ ...moment, originalIndex: index }))
+            .filter(moment => moment.text.toLowerCase().includes(lowerCaseSearchTerm));
+
+        if (filteredMoments.length === 0) {
+            const message = searchTerm ? 'לא נמצאו רגעים תואמים לחיפוש.' : 'אין עדיין רגעים.';
+            momentsListUL.innerHTML = `<p class="no-results">${message}</p>`;
+            return;
+        }
+
+        const momentsHTML = filteredMoments.map(moment => {
+            // The date is saved in 'YYYY-MM-DD' format, which is safe for new Date()
+            const date = new Date(moment.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
+                <div class="moment-content">
+                    <p class="moment-date">${date}</p>
+                    <p class="moment-text">${moment.text}</p>
+                </div>
+                <div class="moment-controls">
+                    <button class="edit-moment-btn">ערוך</button>
+                    <button class="delete-moment-btn">&times;</button>
+                </div>
+            </li>`
+        }).join('');
+
+        momentsListUL.innerHTML = momentsHTML;
+    };
+
     const renderPersonDetail = (personId) => {
         const person = allPeople.find(p => p.id === personId);
         if (!person) { renderAppShell(); return; }
         const color = themeColors[allPeople.findIndex(p => p.id === personId) % themeColors.length];
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
-        const momentsHTML = (person.moments || []).map((moment, index) => `<li class="moment-item" data-moment-index="${index}"><div class="moment-content"><p class="moment-date">${moment.date}</p><p class="moment-text">${moment.text}</p></div><div class="moment-controls"><button class="edit-moment-btn">ערוך</button><button class="delete-moment-btn">&times;</button></div></li>`).join('');
 
-        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><button type="submit">שמור רגע</button></form><h2>רגעים</h2><ul class="moments-list">${(person.moments || []).length > 0 ? momentsHTML : '<p class="no-results">אין עדיין רגעים.</p>'}</ul></section></main>`;
+        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><button type="submit">שמור רגע</button></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+
+        renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
     };
 
@@ -172,6 +208,17 @@ async function startApp(user, db) {
 
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
+
+        const momentSearchInput = document.getElementById('moment-search-bar');
+        if (momentSearchInput) {
+            momentSearchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value;
+                const person = allPeople.find(p => p.id === personId);
+                if (person) {
+                    renderFilteredMoments(person, searchTerm);
+                }
+            });
+        }
 
         document.getElementById('delete-person-btn').addEventListener('click', async () => {
             if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
