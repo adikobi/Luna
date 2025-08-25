@@ -216,3 +216,32 @@ button, input, textarea {
     font-family: inherit;
     font-size: 1rem;
 }
+
+/* --- Tags --- */
+#moment-tags-input {
+    width: 100%;
+    background-color: var(--light-bg);
+    border: 1px solid var(--transparent-white);
+    border-radius: 6px;
+    color: var(--off-white);
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.moment-tags {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.moment-tag {
+    background-color: var(--light-blue);
+    color: var(--dark-bg);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}

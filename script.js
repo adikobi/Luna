@@ -158,12 +158,17 @@ async function startApp(user, db) {
         }
 
         const momentsHTML = filteredMoments.map(moment => {
-            // The date is saved in 'YYYY-MM-DD' format, which is safe for new Date()
             const date = new Date(moment.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const tagsHTML = (moment.tags && moment.tags.length > 0)
+                ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
+                : '';
+
             return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
                 <div class="moment-content">
                     <p class="moment-date">${date}</p>
                     <p class="moment-text">${moment.text}</p>
+                    ${tagsHTML}
                 </div>
                 <div class="moment-controls">
                     <button class="edit-moment-btn">ערוך</button>
@@ -181,7 +186,7 @@ async function startApp(user, db) {
         const color = themeColors[allPeople.findIndex(p => p.id === personId) % themeColors.length];
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><button type="submit">שמור רגע</button></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><input type="text" id="moment-tags-input" placeholder="תגיות (מופרדות בפסיק)..."><button type="submit">שמור רגע</button></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -251,12 +256,25 @@ async function startApp(user, db) {
         document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const momentText = document.getElementById('moment-text-input').value;
+            const tagsText = document.getElementById('moment-tags-input').value;
+
             if (!momentText.trim()) return;
+
+            const tags = tagsText.split(',')
+                .map(tag => tag.trim().replace(/#/g, '')) // Clean up tags
+                .filter(tag => tag.length > 0);
+
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
-                allPeople[personIndex].moments.unshift({ date: new Date().toLocaleDateString('en-CA'), text: momentText });
+                const newMoment = {
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString('en-CA'),
+                    text: momentText,
+                    tags: tags
+                };
+                allPeople[personIndex].moments.unshift(newMoment);
                 await saveData(allPeople);
-                renderPersonDetail(personId);
+                renderPersonDetail(personId); // Re-render the detail view to show the new moment
             }
         });
 
