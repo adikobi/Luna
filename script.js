@@ -203,7 +203,27 @@ async function startApp(user, db) {
         await saveData(allPeople);
         renderAppShell();
     };
-    const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
+    const handleSearch = (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+        if (!searchTerm) {
+            renderPeopleGrid(allPeople);
+            return;
+        }
+
+        const filteredPeople = allPeople.filter(person => {
+            const nameMatch = person.name.toLowerCase().includes(searchTerm);
+            if (nameMatch) {
+                return true;
+            }
+
+            const momentMatch = (person.moments || []).some(moment =>
+                moment.text.toLowerCase().includes(searchTerm)
+            );
+            return momentMatch;
+        });
+
+        renderPeopleGrid(filteredPeople);
+    };
     const handleCardClick = (event) => { renderPersonDetail(parseInt(event.currentTarget.dataset.personId, 10)); };
 
     const addPersonDetailEventListeners = (personId) => {
