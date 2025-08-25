@@ -35,12 +35,18 @@ function initializeApp() {
             grid.innerHTML = `<p class="no-results">לא נמצאו תוצאות.</p>`;
             return;
         }
-        grid.innerHTML = peopleToRender.map(person => `
-            <div class="person-card">
-                <img src="${person.image}" alt="${person.name}">
-                <h3>${person.name}</h3>
-            </div>
-        `).join('');
+        grid.innerHTML = peopleToRender.map(person => {
+            const avatarHTML = person.image
+                ? `<img src="${person.image}" alt="${person.name}">`
+                : `<div class="default-avatar"><i class="fas fa-user"></i></div>`;
+
+            return `
+                <div class="person-card">
+                    ${avatarHTML}
+                    <h3>${person.name}</h3>
+                </div>
+            `;
+        }).join('');
     };
 
     const renderNewPersonForm = () => {
@@ -72,8 +78,7 @@ function initializeApp() {
     const handleAddPerson = (event) => {
         event.preventDefault();
         const name = document.getElementById('name').value;
-        let image = document.getElementById('image').value;
-        if (!image) { image = `https://i.pravatar.cc/150?u=${Date.now()}`; }
+        const image = document.getElementById('image').value; // Let it be empty if not provided
         const newPerson = { id: Date.now(), name, image };
         allPeople.push(newPerson);
         saveData(allPeople);

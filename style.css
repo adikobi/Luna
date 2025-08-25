@@ -76,6 +76,24 @@ body {
     font-weight: 700;
 }
 
+.default-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid var(--yellow);
+    background-color: var(--dark-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 1rem auto;
+}
+
+.default-avatar .fas {
+    font-size: 60px;
+    color: var(--yellow);
+    opacity: 0.7;
+}
+
 .no-results {
     grid-column: 1 / -1; /* Span all columns */
     text-align: center;
