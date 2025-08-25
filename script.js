@@ -2,24 +2,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // This is the only listener active on initial load.
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
-        startBtn.addEventListener('click',initializeApp);
+        startBtn.addEventListener('click', initializeApp);
     }
 });
 
 function initializeApp() {
     // --- App State ---
     let allPeople = [];
+    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78'];
 
     // --- DATA FUNCTIONS ---
     const defaultPeople = [
         { id: 1, name: 'מאיה', image: 'https://i.pravatar.cc/150?u=maya' },
-        { id: 2, name: 'יוסי', image: 'https://i.pravatar.cc/150?u=yossi' },
+        { id: 2, name: 'יוסי', image: '' }, // This user will get a default avatar
         { id: 3, name: 'סבתא דליה', image: 'https://i.pravatar.cc/150?u=dalya' }
     ];
     const saveData = (data) => localStorage.setItem('luna_people', JSON.stringify(data));
     const loadData = () => {
         const data = localStorage.getItem('luna_people');
-        if (data && data.length > 2) { // check for empty array '[]'
+        if (data && data.length > 2) {
             return JSON.parse(data);
         } else {
             saveData(defaultPeople);
@@ -32,21 +33,27 @@ function initializeApp() {
         const grid = document.getElementById('people-grid');
         if (!grid) return;
         if (peopleToRender.length === 0) {
-            grid.innerHTML = `<p class="no-results">לא נמצאו תוצאות.</p>`;
+            grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר.</p>`;
             return;
         }
         grid.innerHTML = peopleToRender.map(person => {
-            const avatarHTML = person.image
-                ? `<img src="${person.image}" alt="${person.name}">`
-                : `<div class="default-avatar"><i class="fas fa-user"></i></div>`;
-
+            let avatarHTML;
+            if (person.image) {
+                avatarHTML = `<img src="${person.image}" alt="${person.name}">`;
+            } else {
+                // Assign a color based on ID for consistency, or use random
+                const color = themeColors[person.id % themeColors.length];
+                avatarHTML = `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
+            }
             return `
-                <div class="person-card">
+                <div class="person-card" data-person-id="${person.id}">
                     ${avatarHTML}
                     <h3>${person.name}</h3>
                 </div>
             `;
         }).join('');
+        // Add listeners to the newly rendered cards
+        document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
     };
 
     const renderNewPersonForm = () => {
@@ -59,7 +66,7 @@ function initializeApp() {
                     <label for="name">שם:</label>
                     <input type="text" id="name" required>
                     <label for="image">קישור לתמונה:</label>
-                    <input type="url" id="image" placeholder="השאר ריק לתמונת ברירת מחדל">
+                    <input type="url" id="image" placeholder="השאר ריק לאייקון צבעוני">
                     <div class="form-buttons">
                         <button type="submit">שמור</button>
                         <button type="button" id="cancel-btn">ביטול</button>
@@ -68,42 +75,49 @@ function initializeApp() {
             </div>
         `;
         document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
-        document.getElementById('cancel-btn').addEventListener('click', () => {
-            // Re-render the main shell, which includes the grid
-            initializeApp();
-        });
+        document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
+    };
+
+    const renderAppShell = () => {
+        document.body.innerHTML = `
+            <header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div></header>
+            <main id="app-main"><div id="people-grid" class="people-grid"></div></main>
+            <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+        `;
+        allPeople = loadData();
+        renderPeopleGrid(allPeople);
+        document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
+        document.getElementById('search-bar').addEventListener('input', handleSearch);
     };
 
     // --- EVENT HANDLERS ---
     const handleAddPerson = (event) => {
         event.preventDefault();
         const name = document.getElementById('name').value;
-        const image = document.getElementById('image').value; // Let it be empty if not provided
+        const image = document.getElementById('image').value;
         const newPerson = { id: Date.now(), name, image };
         allPeople.push(newPerson);
         saveData(allPeople);
-        initializeApp(); // Re-initialize the app to show the updated list
+        renderAppShell();
     };
 
     const handleSearch = (event) => {
         const searchTerm = event.target.value.toLowerCase();
-        const filteredPeople = allPeople.filter(person =>
-            person.name.toLowerCase().includes(searchTerm)
-        );
+        const filteredPeople = allPeople.filter(person => person.name.toLowerCase().includes(searchTerm));
         renderPeopleGrid(filteredPeople);
     };
 
-    // --- App Shell Rendering and Main Logic ---
-    document.body.innerHTML = `
-        <header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div></header>
-        <main id="app-main"><div id="people-grid" class="people-grid"></div></main>
-        <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
-    `;
+    const handleCardClick = (event) => {
+        // This is a placeholder for a future detail view.
+        // For now, it will handle deletion.
+        const personId = parseInt(event.currentTarget.dataset.personId, 10);
+        if (confirm('האם למחוק את איש הקשר?')) {
+            allPeople = allPeople.filter(p => p.id !== personId);
+            saveData(allPeople);
+            renderPeopleGrid(allPeople);
+        }
+    };
 
-    allPeople = loadData();
-    renderPeopleGrid(allPeople);
-
-    // Attach listeners for the newly rendered shell
-    document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
-    document.getElementById('search-bar').addEventListener('input', handleSearch);
+    // --- INITIALIZATION of the main app ---
+    renderAppShell();
 }
