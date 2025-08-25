@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const db = firebase.firestore();
 
     // UI Elements
+    const splashScreen = document.getElementById('splash-screen');
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const loginForm = document.getElementById('login-form');
@@ -68,26 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Auth State Listener ---
     auth.onAuthStateChanged(user => {
-        const authFormsContainer = document.getElementById('auth-forms-container');
+        setTimeout(() => {
+            if (splashScreen) splashScreen.style.display = 'none';
 
-        if (user) {
-            // User is signed in, show splash screen
-            authContainer.style.display = 'flex';
-            if (authFormsContainer) authFormsContainer.style.display = 'none';
-            appContainer.style.display = 'none';
-
-            setTimeout(() => {
-                authContainer.style.display = 'none';
+            if (user) {
                 appContainer.style.display = 'block';
                 startApp(user, db);
-            }, 2000); // 2 second splash screen
-        } else {
-            // User is signed out, show auth forms
-            authContainer.style.display = 'flex';
-            if (authFormsContainer) authFormsContainer.style.display = 'block';
-            appContainer.style.display = 'none';
-            appContainer.innerHTML = ''; // Clear the app content
-        }
+            } else {
+                authContainer.style.display = 'flex';
+            }
+        }, 1500);
     });
 });
 
