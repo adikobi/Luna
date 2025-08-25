@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeApp() {
     // --- App State ---
     let allPeople = [];
-    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78'];
+    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
 
     // --- DATA FUNCTIONS ---
     const defaultPeople = [
@@ -36,13 +36,13 @@ function initializeApp() {
             grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר.</p>`;
             return;
         }
-        grid.innerHTML = peopleToRender.map(person => {
+        grid.innerHTML = peopleToRender.map((person, index) => {
             let avatarHTML;
             if (person.image) {
                 avatarHTML = `<img src="${person.image}" alt="${person.name}">`;
             } else {
-                // Assign a color based on ID for consistency, or use random
-                const color = themeColors[person.id % themeColors.length];
+                // Cycle through theme colors based on the person's index in the array
+                const color = themeColors[index % themeColors.length];
                 avatarHTML = `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
             }
             return `

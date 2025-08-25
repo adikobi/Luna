@@ -6,6 +6,7 @@
   --yellow: #F6E05E;
   --green: #48BB78;
   --pink: #ED64A6;
+  --light-blue: #63B3ED;
   --transparent-white: rgba(255, 255, 255, 0.1);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
