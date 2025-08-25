@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const body = document.body;
-    let allPeople = []; // Holds the full, unfiltered list
+    // This is the only listener active on initial load.
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click',initializeApp);
+    }
+});
+
+function initializeApp() {
+    // --- App State ---
+    let allPeople = [];
 
     // --- DATA FUNCTIONS ---
     const defaultPeople = [
@@ -11,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveData = (data) => localStorage.setItem('luna_people', JSON.stringify(data));
     const loadData = () => {
         const data = localStorage.getItem('luna_people');
-        if (data) {
+        if (data && data.length > 2) { // check for empty array '[]'
             return JSON.parse(data);
         } else {
             saveData(defaultPeople);
@@ -35,21 +43,30 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     };
 
-    const renderNewPersonForm = () => { /* ... remains the same ... */ };
-
-    const renderAppShell = () => {
-        body.innerHTML = `
-            <header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div></header>
-            <main id="app-main"><div id="people-grid" class="people-grid"></div></main>
-            <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+    const renderNewPersonForm = () => {
+        const main = document.getElementById('app-main');
+        if (!main) return;
+        main.innerHTML = `
+            <div class="form-container">
+                <h2>הוספת איש קשר חדש</h2>
+                <form id="new-person-form">
+                    <label for="name">שם:</label>
+                    <input type="text" id="name" required>
+                    <label for="image">קישור לתמונה:</label>
+                    <input type="url" id="image" placeholder="השאר ריק לתמונת ברירת מחדל">
+                    <div class="form-buttons">
+                        <button type="submit">שמור</button>
+                        <button type="button" id="cancel-btn">ביטול</button>
+                    </div>
+                </form>
+            </div>
         `;
-        allPeople = loadData();
-        renderPeopleGrid(allPeople);
-        document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
-        document.getElementById('search-bar').addEventListener('input', handleSearch);
+        document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            // Re-render the main shell, which includes the grid
+            initializeApp();
+        });
     };
-
-    const renderSplashScreen = () => { /* ... remains the same ... */ };
 
     // --- EVENT HANDLERS ---
     const handleAddPerson = (event) => {
@@ -60,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newPerson = { id: Date.now(), name, image };
         allPeople.push(newPerson);
         saveData(allPeople);
-        renderAppShell();
+        initializeApp(); // Re-initialize the app to show the updated list
     };
 
     const handleSearch = (event) => {
@@ -71,17 +88,17 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPeopleGrid(filteredPeople);
     };
 
-    // --- INITIALIZATION ---
-    // renderNewPersonForm needs access to handleAddPerson
-    const originalRenderNewPersonForm = () => {
-        const main = document.getElementById('app-main');
-        if (!main) return;
-        main.innerHTML = `<div class="form-container"><h2>הוספת איש קשר חדש</h2><form id="new-person-form"><label for="name">שם:</label><input type="text" id="name" required><label for="image">קישור לתמונה:</label><input type="url" id="image" placeholder="השאר ריק לתמונת ברירת מחדל"><div class="form-buttons"><button type="submit">שמור</button><button type="button" id="cancel-btn">ביטול</button></div></form></div>`;
-        document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
-        document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
-    };
-    // Assigning it to the global-like scope
-    window.renderNewPersonForm = originalRenderNewPersonForm;
+    // --- App Shell Rendering and Main Logic ---
+    document.body.innerHTML = `
+        <header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div></header>
+        <main id="app-main"><div id="people-grid" class="people-grid"></div></main>
+        <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+    `;
 
-    renderSplashScreen();
-});
+    allPeople = loadData();
+    renderPeopleGrid(allPeople);
+
+    // Attach listeners for the newly rendered shell
+    document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
+    document.getElementById('search-bar').addEventListener('input', handleSearch);
+}

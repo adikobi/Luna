@@ -21,8 +21,23 @@ body {
 /* --- Splash Screen --- */
 #splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
 .logo-container { position: relative; width: 150px; height: 150px; margin-bottom: 1rem; }
-.moon-icon { font-size: 120px; position: absolute; top: 0; left: 15px; color: var(--yellow); opacity: 0.8; transform: rotate(-20deg); }
-.cat-icon { font-size: 50px; position: absolute; bottom: 10px; left: 25px; animation: cat-peek 3s ease-in-out infinite alternate; }
+.moon-icon {
+    font-size: 140px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--yellow);
+    opacity: 0.8;
+    transform: rotate(-20deg);
+}
+.cat-icon {
+    font-size: 80px; /* User's requested size */
+    color: var(--off-white);
+    position: absolute;
+    bottom: 0;
+    left: 30px;
+    animation: cat-peek 2s ease-in-out infinite alternate; /* User's requested animation */
+}
 .splash-title { font-size: 4rem; color: var(--yellow); margin-bottom: 2rem; }
 #start-btn { background-color: var(--pink); color: var(--white); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 8px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
 #start-btn:hover { transform: scale(1.05); background-color: #d05d92; }
