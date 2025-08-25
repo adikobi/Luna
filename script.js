@@ -1,1 +1,87 @@
-// Luna App Logic will go here.
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.body;
+    let allPeople = []; // Holds the full, unfiltered list
+
+    // --- DATA FUNCTIONS ---
+    const defaultPeople = [
+        { id: 1, name: 'מאיה', image: 'https://i.pravatar.cc/150?u=maya' },
+        { id: 2, name: 'יוסי', image: 'https://i.pravatar.cc/150?u=yossi' },
+        { id: 3, name: 'סבתא דליה', image: 'https://i.pravatar.cc/150?u=dalya' }
+    ];
+    const saveData = (data) => localStorage.setItem('luna_people', JSON.stringify(data));
+    const loadData = () => {
+        const data = localStorage.getItem('luna_people');
+        if (data) {
+            return JSON.parse(data);
+        } else {
+            saveData(defaultPeople);
+            return defaultPeople;
+        }
+    };
+
+    // --- RENDER FUNCTIONS ---
+    const renderPeopleGrid = (peopleToRender) => {
+        const grid = document.getElementById('people-grid');
+        if (!grid) return;
+        if (peopleToRender.length === 0) {
+            grid.innerHTML = `<p class="no-results">לא נמצאו תוצאות.</p>`;
+            return;
+        }
+        grid.innerHTML = peopleToRender.map(person => `
+            <div class="person-card">
+                <img src="${person.image}" alt="${person.name}">
+                <h3>${person.name}</h3>
+            </div>
+        `).join('');
+    };
+
+    const renderNewPersonForm = () => { /* ... remains the same ... */ };
+
+    const renderAppShell = () => {
+        body.innerHTML = `
+            <header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div></header>
+            <main id="app-main"><div id="people-grid" class="people-grid"></div></main>
+            <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+        `;
+        allPeople = loadData();
+        renderPeopleGrid(allPeople);
+        document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
+        document.getElementById('search-bar').addEventListener('input', handleSearch);
+    };
+
+    const renderSplashScreen = () => { /* ... remains the same ... */ };
+
+    // --- EVENT HANDLERS ---
+    const handleAddPerson = (event) => {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        let image = document.getElementById('image').value;
+        if (!image) { image = `https://i.pravatar.cc/150?u=${Date.now()}`; }
+        const newPerson = { id: Date.now(), name, image };
+        allPeople.push(newPerson);
+        saveData(allPeople);
+        renderAppShell();
+    };
+
+    const handleSearch = (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+        const filteredPeople = allPeople.filter(person =>
+            person.name.toLowerCase().includes(searchTerm)
+        );
+        renderPeopleGrid(filteredPeople);
+    };
+
+    // --- INITIALIZATION ---
+    // renderNewPersonForm needs access to handleAddPerson
+    const originalRenderNewPersonForm = () => {
+        const main = document.getElementById('app-main');
+        if (!main) return;
+        main.innerHTML = `<div class="form-container"><h2>הוספת איש קשר חדש</h2><form id="new-person-form"><label for="name">שם:</label><input type="text" id="name" required><label for="image">קישור לתמונה:</label><input type="url" id="image" placeholder="השאר ריק לתמונת ברירת מחדל"><div class="form-buttons"><button type="submit">שמור</button><button type="button" id="cancel-btn">ביטול</button></div></form></div>`;
+        document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
+        document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
+    };
+    // Assigning it to the global-like scope
+    window.renderNewPersonForm = originalRenderNewPersonForm;
+
+    renderSplashScreen();
+});
