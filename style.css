@@ -37,10 +37,10 @@ button, input, textarea {
 .app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
 .app-header h1 { font-size: 1.8rem; color: var(--yellow); margin: 0; }
 
-.app-header.detail-header h1 {
+.app-header.detail-header h1,
+.app-header.search-results-header h1 {
     flex-grow: 1;
     text-align: center;
-    /* Prevent title from getting too close to the back button */
     margin: 0 1rem;
 }
 .search-container { flex-grow: 1; min-width: 200px; }

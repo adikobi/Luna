@@ -224,7 +224,7 @@ async function startApp(user, db) {
     };
 
     const renderSearchResultsView = (initialResults) => {
-        const headerHTML = `<header class="app-header">
+        const headerHTML = `<header class="app-header search-results-header">
                                 <button id="back-to-shell" class="back-button">&larr; חזרה</button>
                                 <h1>תוצאות</h1>
                                 <div class="search-container">
