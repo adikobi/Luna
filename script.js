@@ -235,24 +235,32 @@ async function startApp(user, db) {
         });
     };
 
+    const handleGlobalMomentSearch = (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+
+        const allMoments = allPeople.flatMap(person =>
+            (person.moments || []).map(moment => ({
+                ...moment,
+                personId: person.id,
+                personName: person.name
+            }))
+        );
+
+        const filteredMoments = allMoments.filter(moment =>
+            moment.text.toLowerCase().includes(searchTerm)
+        );
+
+        renderSearchResultsView(filteredMoments);
+    };
+
     const renderAppShell = () => {
-        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div><button id="global-search-btn" class="header-button">חיפוש רגעים</button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><div class="search-container"><input type="search" id="moment-global-search-bar" placeholder="חיפוש ברגעים..."></div><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
         renderPeopleGrid(allPeople);
 
         document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
         document.getElementById('search-bar').addEventListener('input', handleSearch);
+        document.getElementById('moment-global-search-bar').addEventListener('input', handleGlobalMomentSearch);
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
-
-        document.getElementById('global-search-btn').addEventListener('click', () => {
-            const allMoments = allPeople.flatMap(person =>
-                (person.moments || []).map(moment => ({
-                    ...moment,
-                    personId: person.id,
-                    personName: person.name
-                }))
-            );
-            renderSearchResultsView(allMoments);
-        });
     };
 
     const handleAddPerson = async (event) => {
@@ -263,27 +271,7 @@ async function startApp(user, db) {
         await saveData(allPeople);
         renderAppShell();
     };
-    const handleSearch = (event) => {
-        const searchTerm = event.target.value.toLowerCase();
-        if (!searchTerm) {
-            renderPeopleGrid(allPeople);
-            return;
-        }
-
-        const filteredPeople = allPeople.filter(person => {
-            const nameMatch = person.name.toLowerCase().includes(searchTerm);
-            if (nameMatch) {
-                return true;
-            }
-
-            const momentMatch = (person.moments || []).some(moment =>
-                moment.text.toLowerCase().includes(searchTerm)
-            );
-            return momentMatch;
-        });
-
-        renderPeopleGrid(filteredPeople);
-    };
+    const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
     const handleCardClick = (event) => { renderPersonDetail(parseInt(event.currentTarget.dataset.personId, 10)); };
 
     const addPersonDetailEventListeners = (personId) => {
