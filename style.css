@@ -36,6 +36,13 @@ button, input, textarea {
 /* --- Main App Layout --- */
 .app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
 .app-header h1 { font-size: 1.8rem; color: var(--yellow); margin: 0; }
+
+.app-header.detail-header h1 {
+    flex-grow: 1;
+    text-align: center;
+    /* Prevent title from getting too close to the back button */
+    margin: 0 1rem;
+}
 .search-container { flex-grow: 1; min-width: 200px; }
 .search-container input { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); padding: 0.5rem 1rem; font-family: inherit; font-size: 1rem; }
 #app-main { padding: 1.5rem; }
@@ -370,4 +377,91 @@ button, input, textarea {
     .app-header {
         justify-content: flex-start;
     }
+}
+
+/* --- Redesigned Add Moment Form --- */
+#add-moment-form {
+    position: relative;
+}
+
+.floating-form-buttons {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem; /* RTL support means this is the bottom-right */
+    display: flex;
+    gap: 0.5rem;
+}
+
+.form-icon-btn {
+    background-color: var(--pink);
+    color: var(--dark-bg);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+.form-icon-btn:hover {
+    transform: scale(1.1);
+}
+
+/* --- Add Tags Modal Specifics --- */
+.modal-footer {
+    border-top: 1px solid var(--transparent-white);
+    padding-top: 1rem;
+    margin-top: 1rem;
+    text-align: left; /* RTL support means this is the right */
+}
+
+#new-tags-input {
+    width: 100%;
+    background-color: var(--dark-bg); /* Darker than modal bg */
+    border: 1px solid var(--transparent-white);
+    border-radius: 6px;
+    color: var(--off-white);
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    margin-bottom: 1rem;
+}
+
+.new-moment-tags-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 30px; /* Reserve some space */
+}
+
+.new-moment-tag {
+    background-color: var(--light-blue);
+    color: var(--dark-bg);
+    padding: 0.2rem 0.4rem 0.2rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.delete-tag-btn {
+    background: var(--dark-bg);
+    color: var(--off-white);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    font-size: 1rem;
 }
