@@ -253,13 +253,79 @@ async function startApp(user, db) {
         renderSearchResultsView(filteredMoments);
     };
 
+    const closeTagFilterModal = () => {
+        const modalOverlay = document.getElementById('modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.remove();
+        }
+    };
+
+    const openTagFilterModal = () => {
+        const allTags = allPeople.flatMap(p => p.moments.flatMap(m => m.tags || []));
+        const uniqueTags = [...new Set(allTags)].sort();
+
+        const modalOverlay = document.createElement('div');
+        modalOverlay.id = 'modal-overlay';
+
+        let tagsHTML = '';
+        if (uniqueTags.length > 0) {
+            tagsHTML = uniqueTags.map(tag => `<button class="modal-tag-btn" data-tag="${tag}">#${tag}</button>`).join('');
+        } else {
+            tagsHTML = '<p>לא נמצאו תגיות להצגה.</p>';
+        }
+
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>סינון לפי תגית</h2>
+                    <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${tagsHTML}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+
+        document.getElementById('modal-close-btn').addEventListener('click', closeTagFilterModal);
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target.id === 'modal-overlay') {
+                closeTagFilterModal();
+            }
+        });
+
+        // Add listeners for each tag button
+        document.querySelectorAll('.modal-tag-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const tagToFilter = button.dataset.tag;
+
+                const allMoments = allPeople.flatMap(person =>
+                    (person.moments || []).map(moment => ({
+                        ...moment,
+                        personId: person.id,
+                        personName: person.name
+                    }))
+                );
+
+                const filteredMoments = allMoments.filter(moment =>
+                    (moment.tags || []).includes(tagToFilter)
+                );
+
+                renderSearchResultsView(filteredMoments);
+                closeTagFilterModal();
+            });
+        });
+    };
+
     const renderAppShell = () => {
-        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><div class="search-container"><input type="search" id="moment-global-search-bar" placeholder="חיפוש ברגעים..."></div><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><div class="search-container"><input type="search" id="moment-global-search-bar" placeholder="חיפוש ברגעים..."></div><button id="tag-filter-btn" class="header-button">סינון לפי תגית</button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
         renderPeopleGrid(allPeople);
 
         document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
         document.getElementById('search-bar').addEventListener('input', handleSearch);
         document.getElementById('moment-global-search-bar').addEventListener('input', handleGlobalMomentSearch);
+        document.getElementById('tag-filter-btn').addEventListener('click', openTagFilterModal);
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
     };
 
