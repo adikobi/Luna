@@ -192,12 +192,67 @@ async function startApp(user, db) {
         addPersonDetailEventListeners(personId);
     };
 
+    const renderSearchResultsView = (results) => {
+        const headerHTML = `<header class="app-header"><button id="back-to-shell" class="back-button">&larr; חזרה</button><h1>תוצאות חיפוש</h1></header>`;
+
+        let resultsHTML = '';
+        if (results.length === 0) {
+            resultsHTML = '<p class="no-results">לא נמצאו רגעים תואמים.</p>';
+        } else {
+            resultsHTML = '<ul class="search-results-list">' + results.map(result => {
+                const date = new Date(result.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const tagsHTML = (result.tags && result.tags.length > 0)
+                    ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
+                    : '';
+
+                return `
+                    <li class="search-result-item">
+                        <div class="moment-content">
+                            <p class="moment-date">${date}</p>
+                            <p class="moment-text">${result.text}</p>
+                            ${tagsHTML}
+                        </div>
+                        <div class="result-person-info">
+                            <p>מתוך: <a href="#" class="person-link" data-person-id="${result.personId}">${result.personName}</a></p>
+                        </div>
+                    </li>
+                `;
+            }).join('') + '</ul>';
+        }
+
+        appContainer.innerHTML = `${headerHTML}<main id="app-main">${resultsHTML}</main>`;
+
+        // Add event listener for the new back button
+        document.getElementById('back-to-shell').addEventListener('click', renderAppShell);
+
+        // Add event listeners for the person links
+        document.querySelectorAll('.person-link').forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const personId = parseInt(event.target.dataset.personId, 10);
+                renderPersonDetail(personId);
+            });
+        });
+    };
+
     const renderAppShell = () => {
-        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש לפי שם..."></div><button id="global-search-btn" class="header-button">חיפוש רגעים</button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
         renderPeopleGrid(allPeople);
+
         document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
         document.getElementById('search-bar').addEventListener('input', handleSearch);
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+
+        document.getElementById('global-search-btn').addEventListener('click', () => {
+            const allMoments = allPeople.flatMap(person =>
+                (person.moments || []).map(moment => ({
+                    ...moment,
+                    personId: person.id,
+                    personName: person.name
+                }))
+            );
+            renderSearchResultsView(allMoments);
+        });
     };
 
     const handleAddPerson = async (event) => {

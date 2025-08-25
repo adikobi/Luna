@@ -193,6 +193,25 @@ button, input, textarea {
     color: var(--dark-bg);
 }
 
+/* --- Header Buttons (e.g. Global Search) --- */
+.header-button {
+    background: none;
+    border: 1px solid var(--light-blue);
+    color: var(--light-blue);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.header-button:hover {
+    background-color: var(--light-blue);
+    color: var(--dark-bg);
+}
+
 /* --- Loading Text --- */
 .loading-text {
     text-align: center;
@@ -244,4 +263,36 @@ button, input, textarea {
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: bold;
+}
+
+/* --- Search Results View --- */
+.search-results-list {
+    list-style: none;
+    padding: 0;
+}
+
+.search-result-item {
+    background-color: var(--light-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--pink); /* Add a little accent */
+}
+
+.result-person-info {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--transparent-white);
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.result-person-info a {
+    color: var(--yellow);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.result-person-info a:hover {
+    text-decoration: underline;
 }
