@@ -68,14 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Auth State Listener ---
     auth.onAuthStateChanged(user => {
+        const authFormsContainer = document.getElementById('auth-forms-container');
+
         if (user) {
-            // User is signed in
-            authContainer.style.display = 'none';
-            appContainer.style.display = 'block';
-            startApp(user, db);
-        } else {
-            // User is signed out
+            // User is signed in, show splash screen
             authContainer.style.display = 'flex';
+            if (authFormsContainer) authFormsContainer.style.display = 'none';
+            appContainer.style.display = 'none';
+
+            setTimeout(() => {
+                authContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                startApp(user, db);
+            }, 2000); // 2 second splash screen
+        } else {
+            // User is signed out, show auth forms
+            authContainer.style.display = 'flex';
+            if (authFormsContainer) authFormsContainer.style.display = 'block';
             appContainer.style.display = 'none';
             appContainer.innerHTML = ''; // Clear the app content
         }
