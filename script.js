@@ -1,5 +1,5 @@
+// This is the combined, fully functional script.
 document.addEventListener('DOMContentLoaded', () => {
-    // This is the only listener active on initial load.
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.addEventListener('click', initializeApp);
@@ -14,7 +14,7 @@ function initializeApp() {
     // --- DATA FUNCTIONS ---
     const defaultPeople = [
         { id: 1, name: 'מאיה', image: 'https://i.pravatar.cc/150?u=maya' },
-        { id: 2, name: 'יוסי', image: '' }, // This user will get a default avatar
+        { id: 2, name: 'יוסי', image: '' },
         { id: 3, name: 'סבתא דליה', image: 'https://i.pravatar.cc/150?u=dalya' }
     ];
     const saveData = (data) => localStorage.setItem('luna_people', JSON.stringify(data));
@@ -33,7 +33,8 @@ function initializeApp() {
         const grid = document.getElementById('people-grid');
         if (!grid) return;
         if (peopleToRender.length === 0) {
-            grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר.</p>`;
+            const searchTerm = document.getElementById('search-bar')?.value || '';
+            grid.innerHTML = `<p class="no-results">${searchTerm ? 'לא נמצאו תוצאות.' : 'אין אנשי קשר. הוסף אחד!'}</p>`;
             return;
         }
         grid.innerHTML = peopleToRender.map((person, index) => {
@@ -41,7 +42,6 @@ function initializeApp() {
             if (person.image) {
                 avatarHTML = `<img src="${person.image}" alt="${person.name}">`;
             } else {
-                // Cycle through theme colors based on the person's index in the array
                 const color = themeColors[index % themeColors.length];
                 avatarHTML = `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
             }
@@ -52,7 +52,6 @@ function initializeApp() {
                 </div>
             `;
         }).join('');
-        // Add listeners to the newly rendered cards
         document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
     };
 
@@ -108,8 +107,6 @@ function initializeApp() {
     };
 
     const handleCardClick = (event) => {
-        // This is a placeholder for a future detail view.
-        // For now, it will handle deletion.
         const personId = parseInt(event.currentTarget.dataset.personId, 10);
         if (confirm('האם למחוק את איש הקשר?')) {
             allPeople = allPeople.filter(p => p.id !== personId);
