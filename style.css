@@ -30,7 +30,7 @@ button, input, textarea {
 .star-2 { top: 25px; left: 15px; font-size: 12px; animation-delay: 1.5s; }
 .splash-title { font-size: 4rem; color: var(--white); margin-bottom: 0.5rem; }
 .splash-subtitle { font-size: 1.25rem; color: var(--white); opacity: 0.8; margin-bottom: 2.5rem; }
-#start-btn { background-color: var(--pink); color: var(--dark-bg); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
+#start-btn { background-color: var(--pink); color: var(--dark-bg); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 16px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
 #start-btn:hover { transform: scale(1.05); background-color: #d05d92; }
 
 /* --- Main App Layout --- */

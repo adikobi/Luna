@@ -103,8 +103,10 @@ function initializeApp() {
                     }
                 }
                 if (target.classList.contains('edit-moment-btn')) {
-                    const momentTextElement = momentItem.querySelector('.moment-text');
-                    momentTextElement.innerHTML = `<textarea class="moment-edit-textarea">${momentTextElement.textContent}</textarea>`;
+                    const momentContent = momentItem.querySelector('.moment-content');
+                    const currentText = momentContent.querySelector('.moment-text').textContent;
+                    // Replace the content div with a textarea for editing
+                    momentContent.innerHTML = `<textarea class="moment-edit-textarea">${currentText}</textarea>`;
                     target.textContent = 'שמור';
                     target.classList.replace('edit-moment-btn', 'save-moment-btn');
                 }
