@@ -22,7 +22,7 @@ body {
 #splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
 .logo-container { position: relative; width: 180px; height: 180px; margin-bottom: 1rem; }
 .moon-icon {
-    font-size: 180px; /* Bigger moon */
+    font-size: 150px;
     position: absolute;
     top: 0;
     left: 0;
@@ -30,14 +30,14 @@ body {
     opacity: 0.8;
     transform: rotate(-15deg);
 }
-.cat-icon {
-    font-size: 55px; /* Slightly smaller cat to fit on the edge */
-    color: var(--off-white);
+.heart-icon {
+    font-size: 50px;
+    color: var(--pink);
     position: absolute;
-    bottom: 25px; /* Positioned on the bottom edge */
-    left: 100px; /* Positioned on the bottom edge */
-    transform-origin: bottom center;
-    animation: cat-peek 4s ease-in-out infinite alternate;
+    bottom: 45px;
+    left: 55px;
+    transform: rotate(-15deg);
+    opacity: 0.9;
 }
 .splash-title { font-size: 4rem; color: var(--yellow); margin-bottom: 2rem; }
 #start-btn { background-color: var(--pink); color: var(--white); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 8px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
@@ -115,11 +115,3 @@ body {
 
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes cat-peek {
-    from {
-        transform: rotate(-15deg) translateY(5px);
-    }
-    to {
-        transform: rotate(-15deg) translateY(-5px);
-    }
-}
