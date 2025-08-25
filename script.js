@@ -102,7 +102,7 @@ function initializeApp() {
                         renderPersonDetail(personId);
                     }
                 }
-                if (target.classList.contains('edit-moment-btn')) {
+                else if (target.classList.contains('edit-moment-btn')) {
                     const momentContent = momentItem.querySelector('.moment-content');
                     const currentText = momentContent.querySelector('.moment-text').textContent;
                     // Replace the content div with a textarea for editing
@@ -110,7 +110,7 @@ function initializeApp() {
                     target.textContent = 'שמור';
                     target.classList.replace('edit-moment-btn', 'save-moment-btn');
                 }
-                if (target.classList.contains('save-moment-btn')) {
+                else if (target.classList.contains('save-moment-btn')) {
                     const newText = momentItem.querySelector('.moment-edit-textarea').value;
                     allPeople[personIndex].moments[momentIndex].text = newText;
                     saveData(allPeople);
