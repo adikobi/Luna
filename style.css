@@ -13,6 +13,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Heebo', sans-serif; color: var(--off-white); background-color: var(--dark-bg); }
 
+button, input, textarea {
+    font-family: inherit;
+}
+
 /* --- Splash Screen --- */
 #splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
 .logo-container { position: relative; width: 150px; height: 150px; margin-bottom: 1rem; }
