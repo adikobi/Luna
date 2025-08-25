@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="splash-screen">
+    <div id="auth-container">
         <div class="logo-container">
             <i class="fas fa-moon moon-icon"></i>
             <div class="stars">
@@ -22,8 +22,54 @@
         </div>
         <h1 class="splash-title">Luna</h1>
         <p class="splash-subtitle">זיכרונות ורגעים</p>
-        <button id="start-btn">בואו נתחיל</button>
+
+        <div id="auth-forms-container">
+            <div id="login-form-container">
+                <h2>התחברות</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="אימייל" required>
+                    <input type="password" id="login-password" placeholder="סיסמה" required>
+                    <button type="submit">התחבר</button>
+                </form>
+                <p>אין לך חשבון? <a href="#" id="show-register">הירשם כאן</a></p>
+            </div>
+
+            <div id="register-form-container" style="display: none;">
+                <h2>הרשמה</h2>
+                <form id="register-form">
+                    <input type="email" id="register-email" placeholder="אימייל" required>
+                    <input type="password" id="register-password" placeholder="סיסמה" required>
+                    <button type="submit">הירשם</button>
+                </form>
+                <p>יש לך כבר חשבון? <a href="#" id="show-login">התחבר כאן</a></p>
+            </div>
+        </div>
     </div>
+
+    <div id="app-container" style="display: none;">
+        <!-- The rest of the app will be built here by script.js -->
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      // IMPORTANT: Replace this with your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyYOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>

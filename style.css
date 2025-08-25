@@ -86,3 +86,102 @@ button, input, textarea {
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes twinkle { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+/* --- Auth Page --- */
+#auth-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
+    padding: 1rem;
+}
+
+#auth-forms-container {
+    max-width: 400px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+#login-form-container h2, #register-form-container h2 {
+    color: var(--yellow);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+#login-form input, #register-form input {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--light-bg);
+    border: 1px solid var(--transparent-white);
+    border-radius: 6px;
+    color: var(--off-white);
+    font-family: inherit;
+    font-size: 1rem;
+    text-align: right; /* For RTL */
+}
+
+#login-form button, #register-form button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    background-color: var(--pink);
+    color: var(--dark-bg);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#login-form button:hover, #register-form button:hover {
+    background-color: #d05d92;
+}
+
+#login-form-container p, #register-form-container p {
+    margin-top: 1.5rem;
+    color: var(--off-white);
+}
+
+#login-form-container a, #register-form-container a {
+    color: var(--yellow);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#login-form-container a:hover, #register-form-container a:hover {
+    text-decoration: underline;
+}
+
+/* --- Logout Button --- */
+#logout-btn {
+    background: none;
+    border: 1px solid var(--pink);
+    color: var(--pink);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    margin-right: auto; /* Pushes it to the left in RTL */
+    margin-left: 1rem; /* Spacing from search bar */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+#logout-btn:hover {
+    background-color: var(--pink);
+    color: var(--dark-bg);
+}
+
+/* --- Loading Text --- */
+.loading-text {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--yellow);
+    padding: 2rem;
+}
