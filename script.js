@@ -1,15 +1,15 @@
-// Final, combined, and corrected script for the entire application.
-const startBtn = document.getElementById('start-btn');
-if (startBtn) {
-    startBtn.addEventListener('click', initializeApp);
-}
+// THIS IS THE FINAL, DEFINITIVE, COMPLETE SCRIPT.
+document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', initializeApp);
+    }
+});
 
 function initializeApp() {
-    // --- App State ---
     let allPeople = [];
     const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
 
-    // --- DATA FUNCTIONS ---
     const defaultPeople = [
         { id: 1, name: 'מאיה', image: 'https://i.pravatar.cc/150?u=maya', moments: [{date: "2025-08-25", text: "This is a sample moment."}] },
         { id: 2, name: 'יוסי', image: '', moments: [] },
@@ -27,12 +27,11 @@ function initializeApp() {
         }
     };
 
-    // --- RENDER FUNCTIONS ---
     const renderPeopleGrid = (peopleToRender) => {
         const grid = document.getElementById('people-grid');
         if (!grid) return;
         if (peopleToRender.length === 0) {
-            grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
+            grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר.</p>`;
         } else {
             grid.innerHTML = peopleToRender.map((person, index) => {
                 const color = themeColors[index % themeColors.length];
@@ -56,11 +55,7 @@ function initializeApp() {
         if (!person) { renderAppShell(); return; }
         const color = themeColors[allPeople.indexOf(person) % themeColors.length];
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
-        const momentsHTML = (person.moments || []).map((moment, index) => `
-            <li class="moment-item" data-moment-index="${index}">
-                <div class="moment-content"><p class="moment-date">${moment.date}</p><p class="moment-text">${moment.text}</p></div>
-                <div class="moment-controls"><button class="edit-moment-btn">ערוך</button><button class="delete-moment-btn">&times;</button></div>
-            </li>`).join('');
+        const momentsHTML = (person.moments || []).map((moment, index) => `<li class="moment-item" data-moment-index="${index}"><div class="moment-content"><p class="moment-date">${moment.date}</p><p class="moment-text">${moment.text}</p></div><div class="moment-controls"><button class="edit-moment-btn">ערוך</button><button class="delete-moment-btn">&times;</button></div></li>`).join('');
         document.body.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><button type="submit">שמור רגע</button></form><h2>רגעים</h2><ul class="moments-list">${(person.moments || []).length > 0 ? momentsHTML : '<p class="no-results">אין עדיין רגעים.</p>'}</ul></section></main>`;
         addPersonDetailEventListeners(personId);
     };
@@ -73,19 +68,13 @@ function initializeApp() {
         document.getElementById('search-bar').addEventListener('input', handleSearch);
     };
 
-    // --- EVENT HANDLERS ---
     const handleAddPerson = (event) => { event.preventDefault(); const name = document.getElementById('name').value; const image = document.getElementById('image').value; allPeople.push({ id: Date.now(), name, image, moments: [] }); saveData(allPeople); renderAppShell(); };
     const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
     const handleCardClick = (event) => { renderPersonDetail(parseInt(event.currentTarget.dataset.personId, 10)); };
+
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
-        document.getElementById('delete-person-btn').addEventListener('click', () => {
-            if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
-                allPeople = allPeople.filter(p => p.id !== personId);
-                saveData(allPeople);
-                renderAppShell();
-            }
-        });
+        document.getElementById('delete-person-btn').addEventListener('click', () => { if (confirm('האם למחוק את איש הקשר?')) { allPeople = allPeople.filter(p => p.id !== personId); saveData(allPeople); renderAppShell(); } });
         document.getElementById('add-moment-form').addEventListener('submit', (event) => {
             event.preventDefault();
             const momentText = document.getElementById('moment-text-input').value;
@@ -129,6 +118,11 @@ function initializeApp() {
         }
     };
 
-    // --- INITIALIZATION of the main app ---
     renderAppShell();
+}
+
+// Attach listener directly, since script is at the end of the body
+const startBtnGlobal = document.getElementById('start-btn');
+if (startBtnGlobal) {
+    startBtnGlobal.addEventListener('click', initializeApp);
 }
