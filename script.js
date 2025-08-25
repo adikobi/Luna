@@ -105,12 +105,10 @@ async function startApp(user, db) {
             if (doc.exists && doc.data().people) {
                 return doc.data().people;
             } else {
-                const defaultPeople = [
-                    { id: Date.now() + 1, name: 'מאיה', image: 'https://i.pravatar.cc/150?u=maya', moments: [{date: new Date().toLocaleDateString('en-CA'), text: "זהו רגע לדוגמה. אפשר לערוך או למחוק אותו."}] },
-                    { id: Date.now() + 2, name: 'יוסי', image: '', moments: [] }
-                ];
-                await saveData(defaultPeople);
-                return defaultPeople;
+                // New user. Create an empty list.
+                const emptyPeopleList = [];
+                await saveData(emptyPeopleList); // Save the empty list to establish the document
+                return emptyPeopleList;
             }
         } catch (error) {
             console.error("Error loading data: ", error);
