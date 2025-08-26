@@ -115,7 +115,7 @@ async function startApp(user, db) {
                         <div class="passcode-digit"></div>
                     </div>
                     <div class="passcode-keypad">
-                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 'נקה', 0, '<i class="fas fa-backspace"></i>'].map(key =>
+                        ${['1', '2', '3', '4', '5', '6', '7', '8', '9', 'נקה', '0', '<i class="fas fa-backspace"></i>'].map(key =>
                             `<button class="keypad-btn" data-key="${key}">${key}</button>`
                         ).join('')}
                     </div>
@@ -487,8 +487,8 @@ async function startApp(user, db) {
                 <div id="people-grid" class="people-grid"></div>
             </main>
             <div class="fab-container">
-                <button id="hidden-area-btn" class="fab fab-secondary" title="${hiddenButtonTitle}"><i class="fas ${lockIconClass}"></i></button>
                 <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+                <button id="hidden-area-btn" class="fab fab-secondary" title="${hiddenButtonTitle}"><i class="fas ${lockIconClass}"></i></button>
             </div>
         `;
 

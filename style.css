@@ -349,6 +349,10 @@ button, input, textarea {
     text-decoration: underline;
 }
 
+.result-person-info a {
+    font-family: 'Heebo', sans-serif;
+}
+
 /* --- Modal --- */
 .modal-overlay {
     position: fixed;
@@ -602,14 +606,19 @@ button, input, textarea {
     background-color: var(--dark-bg);
     border: 1px solid var(--transparent-white);
     color: var(--off-white);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 50%; /* Make it a circle */
+    width: 60px; /* Explicit width */
+    height: 60px; /* Explicit height */
+    padding: 0; /* Remove padding to center content */
     font-family: 'Heebo', sans-serif; /* Use standard font */
     font-size: 1.2rem; /* Adjusted font size */
     font-weight: 400; /* Normal weight */
-    text-align: left; /* Align to the left (right in RTL) */
+    text-align: center; /* Center the number in the circle */
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex; /* Use flexbox for centering */
+    justify-content: center;
+    align-items: center;
 }
 
 .keypad-btn:hover {
