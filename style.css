@@ -232,6 +232,20 @@ button, input, textarea {
     color: var(--dark-bg);
 }
 
+#hidden-area-btn {
+    border-color: var(--yellow);
+    color: var(--yellow);
+}
+
+#hidden-area-btn:hover {
+    background-color: var(--yellow);
+    color: var(--dark-bg);
+}
+
+#hidden-area-btn i {
+    font-size: 1.1rem;
+}
+
 /* --- Loading Text --- */
 .loading-text {
     text-align: center;
@@ -521,4 +535,88 @@ button, input, textarea {
 
 .toast-notification.fade-out {
     opacity: 0;
+}
+
+/* --- Passcode Modal --- */
+.passcode-modal-content {
+    max-width: 320px;
+    text-align: center;
+}
+
+.passcode-prompt {
+    min-height: 24px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--yellow);
+}
+
+.passcode-display {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.passcode-digit {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--off-white);
+    transition: background-color 0.2s;
+}
+
+.passcode-digit.filled {
+    background-color: var(--yellow);
+}
+
+.passcode-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.keypad-btn {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--transparent-white);
+    color: var(--off-white);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.keypad-btn:hover {
+    background-color: var(--transparent-white);
+}
+
+.passcode-modal-content .modal-body {
+    flex-direction: column;
+}
+
+.passcode-display.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+/* --- Hidden Mode Visuals --- */
+.hidden-mode .app-header h1 {
+    color: var(--light-blue);
+}
+
+.hidden-mode #hidden-area-btn {
+    border-color: var(--light-blue);
+    color: var(--light-blue);
+}
+
+.hidden-mode #hidden-area-btn:hover {
+    background-color: var(--light-blue);
+    color: var(--dark-bg);
 }

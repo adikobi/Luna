@@ -88,12 +88,144 @@ async function startApp(user, db) {
     const appContainer = document.getElementById('app-container');
     let allPeople = [];
     let newMomentTags = []; // Temp state for tags of a new moment
+    let isHiddenMode = false; // App state: normal or hidden
+    let currentUserData = {}; // Holds all data for the logged-in user
     const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
     const userDocRef = db.collection('users').doc(user.uid);
 
-    const saveData = async (data) => {
+    const showPasscodeModal = () => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+
+        const hasCode = currentUserData.hiddenAreaCode !== null;
+        const title = hasCode ? "הזן קוד כניסה" : "צור קוד חדש";
+
+        modalOverlay.innerHTML = `
+            <div class="modal-content passcode-modal-content">
+                <div class="modal-header">
+                    <h2 id="passcode-title">${title}</h2>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="passcode-prompt" class="passcode-prompt"></p>
+                    <div class="passcode-display">
+                        <div class="passcode-digit"></div>
+                        <div class="passcode-digit"></div>
+                        <div class="passcode-digit"></div>
+                        <div class="passcode-digit"></div>
+                    </div>
+                    <div class="passcode-keypad">
+                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 'נקה', 0, '<i class="fas fa-backspace"></i>'].map(key =>
+                            `<button class="keypad-btn" data-key="${key}">${key}</button>`
+                        ).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalOverlay);
+
+        const promptEl = modalOverlay.querySelector('#passcode-prompt');
+        const digitEls = modalOverlay.querySelectorAll('.passcode-digit');
+
+        let enteredCode = [];
+        let isConfirming = false;
+        let tempCode = null;
+
+        const updateDisplay = () => {
+            digitEls.forEach((digitEl, index) => {
+                digitEl.classList.toggle('filled', index < enteredCode.length);
+            });
+        };
+
+        const resetInput = (promptText = "") => {
+            enteredCode = [];
+            promptEl.textContent = promptText;
+            updateDisplay();
+        };
+
+        const handleCodeEntered = async () => {
+            const code = enteredCode.join('');
+            const hasCode = currentUserData.hiddenAreaCode !== null;
+
+            if (hasCode) { // We are in "Enter" mode
+                if (code === currentUserData.hiddenAreaCode) {
+                    modalOverlay.remove();
+                    enterHiddenMode();
+                } else {
+                    promptEl.textContent = "קוד שגוי, נסה שוב.";
+                    modalOverlay.querySelector('.passcode-display').classList.add('shake');
+                    setTimeout(() => {
+                        modalOverlay.querySelector('.passcode-display').classList.remove('shake');
+                        resetInput();
+                    }, 500);
+                }
+            } else { // We are in "Create" mode
+                if (!isConfirming) {
+                    tempCode = code;
+                    isConfirming = true;
+                    resetInput("הזן את הקוד שוב לאישור.");
+                } else {
+                    if (code === tempCode) {
+                        await saveData('hiddenAreaCode', code);
+                        alert("הקוד נוצר בהצלחה!");
+                        modalOverlay.remove();
+                    } else {
+                        isConfirming = false;
+                        tempCode = null;
+                        promptEl.textContent = "הקודים לא תואמים. נסה שוב.";
+                        setTimeout(() => resetInput("צור קוד חדש."), 1500);
+                    }
+                }
+            }
+        };
+
+        modalOverlay.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target === modalOverlay || target.closest('.modal-close-btn')) {
+                modalOverlay.remove();
+                return;
+            }
+
+            const keyBtn = target.closest('.keypad-btn');
+            if (keyBtn) {
+                const key = keyBtn.dataset.key;
+                if (key === 'נקה') {
+                    resetInput();
+                } else if (key.includes('backspace')) {
+                    if (enteredCode.length > 0) {
+                        enteredCode.pop();
+                        updateDisplay();
+                    }
+                } else if (enteredCode.length < 4) {
+                    enteredCode.push(key);
+                    updateDisplay();
+                    if (enteredCode.length === 4) {
+                        handleCodeEntered();
+                    }
+                }
+            }
+        });
+    };
+
+    const enterHiddenMode = async () => {
+        isHiddenMode = true;
+        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...טוען</p></main>`;
+        allPeople = await loadData();
+        renderAppShell();
+    };
+
+    const exitHiddenMode = async () => {
+        isHiddenMode = false;
+        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...יוצא</p></main>`;
+        allPeople = await loadData();
+        renderAppShell();
+    };
+
+    const saveData = async (key, value) => {
         try {
-            await userDocRef.set({ people: data });
+            await userDocRef.set({ [key]: value }, { merge: true });
+            // Keep local data in sync
+            currentUserData[key] = value;
         } catch (error) {
             console.error("Error saving data: ", error);
             alert("שגיאה בשמירת הנתונים לענן.");
@@ -103,14 +235,18 @@ async function startApp(user, db) {
     const loadData = async () => {
         try {
             const doc = await userDocRef.get();
-            if (doc.exists && doc.data().people) {
-                return doc.data().people;
+            if (doc.exists) {
+                currentUserData = doc.data();
+                // Ensure default fields exist if loading from an older data structure
+                if (!currentUserData.people) currentUserData.people = [];
+                if (!currentUserData.hiddenPeople) currentUserData.hiddenPeople = [];
+                if (currentUserData.hiddenAreaCode === undefined) currentUserData.hiddenAreaCode = null;
             } else {
-                // New user. Create an empty list.
-                const emptyPeopleList = [];
-                await saveData(emptyPeopleList); // Save the empty list to establish the document
-                return emptyPeopleList;
+                // New user, create the full data structure
+                currentUserData = { people: [], hiddenPeople: [], hiddenAreaCode: null };
+                await userDocRef.set(currentUserData);
             }
+            return isHiddenMode ? currentUserData.hiddenPeople : currentUserData.people;
         } catch (error) {
             console.error("Error loading data: ", error);
             alert("שגיאה בטעינת הנתונים מהענן.");
@@ -321,7 +457,7 @@ async function startApp(user, db) {
             if (personIndex !== -1) {
                 allPeople[personIndex].moments[momentIndex].text = newText;
                 allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
-                await saveData(allPeople);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
                 modalOverlay.remove();
                 newMomentTags = [];
                 renderPersonDetail(personId);
@@ -335,7 +471,12 @@ async function startApp(user, db) {
     };
 
     const renderAppShell = () => {
-        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><button id="global-search-btn" class="header-button">חיפוש רגעים</button><button id="tag-filter-btn" class="header-button">סינון לפי תגית</button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+        const lockIconClass = isHiddenMode ? 'fa-lock-open' : 'fa-lock';
+        const hiddenButtonTitle = isHiddenMode ? 'צא מאזור נסתר' : 'אזור נסתר';
+        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><button id="global-search-btn" class="header-button">חיפוש רגעים</button><button id="tag-filter-btn" class="header-button">סינון לפי תגית</button><button id="hidden-area-btn" class="header-button" title="${hiddenButtonTitle}"><i class="fas ${lockIconClass}"></i></button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+
+        appContainer.classList.toggle('hidden-mode', isHiddenMode);
+
         renderPeopleGrid(allPeople);
 
         document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
@@ -351,6 +492,13 @@ async function startApp(user, db) {
             renderSearchResultsView(allMoments); // Pass all moments to the view
         });
         document.getElementById('tag-filter-btn').addEventListener('click', openTagFilterModal);
+        document.getElementById('hidden-area-btn').addEventListener('click', () => {
+            if (isHiddenMode) {
+                exitHiddenMode();
+            } else {
+                showPasscodeModal();
+            }
+        });
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
     };
 
@@ -359,7 +507,7 @@ async function startApp(user, db) {
         const name = document.getElementById('name').value;
         const image = document.getElementById('image').value;
         allPeople.push({ id: Date.now(), name, image, moments: [] });
-        await saveData(allPeople);
+        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
         renderAppShell();
     };
     const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
@@ -513,7 +661,7 @@ async function startApp(user, db) {
         document.getElementById('delete-person-btn').addEventListener('click', async () => {
             if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
                 allPeople = allPeople.filter(p => p.id !== personId);
-                await saveData(allPeople);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
                 renderAppShell();
             }
         });
@@ -533,7 +681,7 @@ async function startApp(user, db) {
                     tags: [...newMomentTags] // Use the tags from the modal's state
                 };
                 allPeople[personIndex].moments.unshift(newMoment);
-                await saveData(allPeople);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
 
                 showToast("הרגע נשמר בהצלחה!");
                 newMomentTags = []; // Clear the temporary tags state
@@ -554,7 +702,7 @@ async function startApp(user, db) {
                 if (target.classList.contains('delete-moment-btn')) {
                     if (confirm('האם למחוק את הרגע?')) {
                         allPeople[personIndex].moments.splice(momentIndex, 1);
-                        await saveData(allPeople);
+                        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
                         renderPersonDetail(personId);
                     }
                 } else if (target.classList.contains('edit-moment-btn')) {
