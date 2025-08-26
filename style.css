@@ -120,6 +120,7 @@
   
   /* --- Detail View --- */
   .back-button {
+
       background-color: #FFFA8D;
       border: 1px solid var(--transparent-white);
       color: var(--text-on-light);
