@@ -278,178 +278,59 @@ async function startApp(user, db) {
         renderSearchResultsView(filteredMoments);
     };
 
-    const closeTagFilterModal = () => {
-        const modalOverlay = document.getElementById('modal-overlay');
-        if (modalOverlay) {
-            modalOverlay.remove();
-        }
-    };
-
-    const closeEditMomentModal = () => {
-        const modalOverlay = document.getElementById('edit-moment-modal-overlay');
-        if (modalOverlay) {
-            modalOverlay.remove();
-        }
-        newMomentTags = []; // Clear temp tags on close
-    };
-
-    const openEditMomentModal = (personId, momentIndex) => {
-        const person = allPeople.find(p => p.id === personId);
-        if (!person) return;
-        const moment = person.moments[momentIndex];
-        if (!moment) return;
-
-        // Pre-fill the temporary tags state
-        newMomentTags = [...(moment.tags || [])];
-
+    const openTagFilterModal = () => {
+        const allTags = allPeople.flatMap(p => p.moments.flatMap(m => m.tags || []));
+        const uniqueTags = [...new Set(allTags)].sort();
         const modalOverlay = document.createElement('div');
-        modalOverlay.id = 'edit-moment-modal-overlay';
-
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>עריכת רגע</h2>
-                    <button id="edit-modal-close-btn" class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <textarea id="edit-moment-text" class="moment-edit-textarea">${moment.text}</textarea>
-                    <h4 style="margin-top: 1rem;">תגיות</h4>
-                    <div class="add-tag-input-container">
-                        <input type="text" id="edit-tags-input" placeholder="הקלד תגית...">
-                        <button type="button" id="edit-add-tag-btn" class="header-button">הוסף</button>
-                    </div>
-                    <div class="new-moment-tags-display"></div>
-                </div>
-                <div class="modal-footer">
-                     <button id="save-changes-btn" class="header-button">שמור שינויים</button>
-                </div>
-            </div>
-        `;
-
+        modalOverlay.className = 'modal-overlay';
+        let tagsHTML = uniqueTags.length > 0 ? uniqueTags.map(tag => `<button class="modal-tag-btn" data-tag="${tag}">#${tag}</button>`).join('') : '<p>לא נמצאו תגיות להצגה.</p>';
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>סינון לפי תגית</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body">${tagsHTML}</div></div>`;
         document.body.appendChild(modalOverlay);
-        renderNewMomentTags(); // Use the same renderer to show the pre-filled tags
-
-        // Add listeners for closing the modal
-        document.getElementById('edit-modal-close-btn').addEventListener('click', closeEditMomentModal);
-        modalOverlay.addEventListener('click', (event) => {
-            if (event.target.id === 'edit-moment-modal-overlay') {
-                closeEditMomentModal();
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) modalOverlay.remove();
+            if (e.target.classList.contains('modal-tag-btn')) {
+                const tag = e.target.dataset.tag;
+                const results = allPeople.flatMap(p => p.moments.filter(m => (m.tags || []).includes(tag)).map(m => ({...m, personId: p.id, personName: p.name })));
+                renderSearchResultsView(results);
+                modalOverlay.remove();
             }
         });
-
-        // Add listeners for managing tags within the edit modal
-        const addBtn = document.getElementById('edit-add-tag-btn');
+    };
+    const openEditMomentModal = (personId, momentIndex) => {
+        const person = allPeople.find(p => p.id === personId);
+        const moment = person?.moments[momentIndex];
+        if (!moment) return;
+        newMomentTags = [...(moment.tags || [])];
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>עריכת רגע</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><textarea id="edit-moment-text" class="moment-edit-textarea">${moment.text}</textarea><h4 style="margin-top: 1rem;">תגיות</h4><div class="add-tag-input-container"><input type="text" id="edit-tags-input" placeholder="הקלד תגית..."><button type="button" id="edit-add-tag-btn" class="header-button">הוסף</button></div><div class="new-moment-tags-display"></div></div><div class="modal-footer"><button id="save-changes-btn" class="header-button">שמור שינויים</button></div></div>`;
+        document.body.appendChild(modalOverlay);
+        renderNewMomentTags();
         const tagsInput = document.getElementById('edit-tags-input');
-        const tagsDisplay = document.querySelector('.new-moment-tags-display');
-
         const addTag = () => {
-            if (!tagsInput) return;
             const newTag = tagsInput.value.trim().replace(/#/g, '');
-            if (newTag && !newMomentTags.includes(newTag)) {
-                newMomentTags.push(newTag);
-                renderNewMomentTags();
-            }
-            tagsInput.value = '';
-            tagsInput.focus();
+            if (newTag && !newMomentTags.includes(newTag)) { newMomentTags.push(newTag); renderNewMomentTags(); }
+            tagsInput.value = ''; tagsInput.focus();
         };
-
-        if(addBtn) addBtn.addEventListener('click', addTag);
-        if (tagsInput) {
-            tagsInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    addTag();
-                }
-            });
-        }
-
-        if (tagsDisplay) {
-            tagsDisplay.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-tag-btn')) {
-                    const index = parseInt(event.target.parentElement.dataset.index, 10);
-                    newMomentTags.splice(index, 1);
-                    renderNewMomentTags();
-                }
-            });
-        }
-
-        // Listener for 'Save Changes'
+        document.getElementById('edit-add-tag-btn').addEventListener('click', addTag);
+        tagsInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
         document.getElementById('save-changes-btn').addEventListener('click', async () => {
             const newText = document.getElementById('edit-moment-text').value;
-            if (!newText.trim()) {
-                alert("הרגע לא יכול להיות ריק.");
-                return;
-            }
-
+            if (!newText.trim()) return alert("הרגע לא יכול להיות ריק.");
             const personIndex = allPeople.findIndex(p => p.id === personId);
-            if (personIndex !== -1 && allPeople[personIndex].moments[momentIndex]) {
-                // Update the moment object directly
+            if (personIndex !== -1) {
                 allPeople[personIndex].moments[momentIndex].text = newText;
                 allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
-
                 await saveData(allPeople);
-                closeEditMomentModal();
+                modalOverlay.remove();
+                newMomentTags = [];
                 renderPersonDetail(personId);
                 showToast("השינויים נשמרו!");
             }
         });
-    };
-
-    const openTagFilterModal = () => {
-        const allTags = allPeople.flatMap(p => p.moments.flatMap(m => m.tags || []));
-        const uniqueTags = [...new Set(allTags)].sort();
-
-        const modalOverlay = document.createElement('div');
-        modalOverlay.id = 'modal-overlay';
-
-        let tagsHTML = '';
-        if (uniqueTags.length > 0) {
-            tagsHTML = uniqueTags.map(tag => `<button class="modal-tag-btn" data-tag="${tag}">#${tag}</button>`).join('');
-        } else {
-            tagsHTML = '<p>לא נמצאו תגיות להצגה.</p>';
-        }
-
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>סינון לפי תגית</h2>
-                    <button id="modal-close-btn" class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    ${tagsHTML}
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modalOverlay);
-
-        document.getElementById('modal-close-btn').addEventListener('click', closeTagFilterModal);
-        modalOverlay.addEventListener('click', (event) => {
-            if (event.target.id === 'modal-overlay') {
-                closeTagFilterModal();
-            }
-        });
-
-        // Add listeners for each tag button
-        document.querySelectorAll('.modal-tag-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const tagToFilter = button.dataset.tag;
-
-                const allMoments = allPeople.flatMap(person =>
-                    (person.moments || []).map(moment => ({
-                        ...moment,
-                        personId: person.id,
-                        personName: person.name
-                    }))
-                );
-
-                const filteredMoments = allMoments.filter(moment =>
-                    (moment.tags || []).includes(tagToFilter)
-                );
-
-                renderSearchResultsView(filteredMoments);
-                closeTagFilterModal();
-            });
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) { modalOverlay.remove(); newMomentTags = []; }
+            if (e.target.classList.contains('delete-tag-btn')) { newMomentTags.splice(parseInt(e.target.parentElement.dataset.index, 10), 1); renderNewMomentTags(); }
         });
     };
 
@@ -526,64 +407,69 @@ async function startApp(user, db) {
         container.innerHTML = `<div class="moment-tags" style="padding: 1rem; justify-content: flex-start;">${tagsHTML}</div>`;
     };
 
-    const closeAddTagsModal = () => {
-        const modalOverlay = document.getElementById('add-tags-modal-overlay');
-        if (modalOverlay) {
-            modalOverlay.remove();
-        }
-        renderStagedTags(); // Render the tags on the main form when modal closes
-    };
-
     const openAddTagsModal = () => {
+        // Create the modal overlay
         const modalOverlay = document.createElement('div');
-        modalOverlay.id = 'add-tags-modal-overlay';
+        modalOverlay.className = 'modal-overlay'; // Use the standard class for styling
 
+        // Set the inner HTML for the modal
         modalOverlay.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>הוסף תגיות</h2>
-                    <button id="add-tags-modal-close-btn" class="modal-close-btn">&times;</button>
+                    <button class="modal-close-btn">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="add-tag-input-container">
                         <input type="text" id="new-tags-input" placeholder="הקלד תגית...">
-                        <button type="button" id="add-tag-btn" class="header-button">הוסף</button>
+                        <button type="button" class="add-tag-btn header-button">הוסף</button>
                     </div>
                     <div class="new-moment-tags-display"></div>
                 </div>
                 <div class="modal-footer">
-                     <button id="save-tags-btn" class="header-button">סיום</button>
+                     <button class="save-tags-btn header-button">סיום</button>
                 </div>
             </div>
         `;
 
         document.body.appendChild(modalOverlay);
-        renderNewMomentTags();
+        renderNewMomentTags(); // Initial render of any existing tags
 
-        const closeBtn = document.getElementById('add-tags-modal-close-btn');
-        const saveBtn = document.getElementById('save-tags-btn');
-        const addBtn = document.getElementById('add-tag-btn');
-        const tagsInput = document.getElementById('new-tags-input');
-        const tagsDisplay = document.querySelector('.new-moment-tags-display');
+        // Get references to elements inside the modal
+        const tagsInput = modalOverlay.querySelector('#new-tags-input');
+
+        // --- Modal Logic ---
+        const closeModal = () => {
+            modalOverlay.remove();
+            renderStagedTags(); // Update the main form with the selected tags
+        };
 
         const addTag = () => {
             if (!tagsInput) return;
             const newTag = tagsInput.value.trim().replace(/#/g, '');
             if (newTag && !newMomentTags.includes(newTag)) {
                 newMomentTags.push(newTag);
-                renderNewMomentTags();
+                renderNewMomentTags(); // Re-render the tags list inside the modal
             }
             tagsInput.value = '';
             tagsInput.focus();
         };
 
-        if(closeBtn) closeBtn.addEventListener('click', closeAddTagsModal);
-        if(saveBtn) saveBtn.addEventListener('click', closeAddTagsModal);
-        if(addBtn) addBtn.addEventListener('click', addTag);
-
+        // --- Event Listeners using event delegation from the overlay ---
         modalOverlay.addEventListener('click', (event) => {
-            if (event.target.id === 'add-tags-modal-overlay') {
-                closeAddTagsModal();
+            // Close modal by clicking outside the content, on a close button, or on the save button
+            if (event.target === modalOverlay || event.target.closest('.modal-close-btn') || event.target.closest('.save-tags-btn')) {
+                closeModal();
+            }
+            // Add a new tag
+            if (event.target.closest('.add-tag-btn')) {
+                addTag();
+            }
+            // Delete a tag
+            if (event.target.classList.contains('delete-tag-btn')) {
+                const index = parseInt(event.target.parentElement.dataset.index, 10);
+                newMomentTags.splice(index, 1);
+                renderNewMomentTags();
             }
         });
 
@@ -592,16 +478,6 @@ async function startApp(user, db) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     addTag();
-                }
-            });
-        }
-
-        if (tagsDisplay) {
-            tagsDisplay.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-tag-btn')) {
-                    const index = parseInt(event.target.parentElement.dataset.index, 10);
-                    newMomentTags.splice(index, 1);
-                    renderNewMomentTags();
                 }
             });
         }
