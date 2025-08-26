@@ -4,10 +4,14 @@
   --light-bg: #1E1E1E;
   --off-white: #fcfaf7;
   --white: #ffffff;
-  --yellow: #F6E05E;
-  --green: #48BB78;
-  --pink: #ED64A6;
-  --light-blue: #63B3ED;
+  --text-on-light: #121212; /* Dark text for light backgrounds */
+
+  /* New Palette */
+  --primary-action: #819A91;   /* Was pink */
+  --secondary-highlight: #A7C1A8; /* Was yellow */
+  --tertiary-accent: #D1D8BE; /* Was green */
+  --subtle-accent: #EEEFE0;   /* Was light-blue */
+
   --transparent-white: rgba(255, 255, 255, 0.1);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,25 +27,25 @@ button, input, textarea {
 /* --- Splash Screen --- */
 #splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
 .logo-container { position: relative; width: 150px; height: 150px; margin-bottom: 1rem; }
-.moon-icon { font-size: 130px; position: absolute; top: 10px; left: 10px; color: var(--yellow); opacity: 0.8; transform: rotate(-15deg); }
+.moon-icon { font-size: 130px; position: absolute; top: 10px; left: 10px; color: var(--secondary-highlight); opacity: 0.8; transform: rotate(-15deg); }
 .stars { position: absolute; top: 10px; right: 0; width: 60px; height: 40px; }
 .stars i { position: absolute; animation: twinkle 2.5s ease-in-out infinite alternate; }
-.stars .fa-heart { color: var(--pink); }
+.stars .fa-heart { color: var(--primary-action); }
 .stars .fa-star { color: var(--off-white); }
 .star-1 { top: 0; left: 20px; font-size: 12px; animation-delay: 0s; }
 .heart-star { top: 10px; left: 40px; font-size: 14px; animation-delay: 0.8s; }
 .star-2 { top: 25px; left: 15px; font-size: 12px; animation-delay: 1.5s; }
 .splash-title { font-size: 4rem; color: var(--white); margin-bottom: 0; }
 .splash-subtitle { font-size: 1.25rem; color: var(--white); opacity: 0.8; margin-bottom: 2.5rem; }
-#start-btn { background-color: var(--pink); color: var(--dark-bg); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
-#start-btn:hover { transform: scale(1.05); background-color: #d05d92; }
+#start-btn { background-color: var(--primary-action); color: var(--text-on-light); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
+#start-btn:hover { transform: scale(1.05); background-color: #6d837a; }
 
 /* --- Main App Layout --- */
 .app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
 .app-header h1 {
     font-family: 'Amatic SC', cursive;
     font-size: 3rem; /* Adjusted size for the new font */
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     margin: 0;
 }
 
@@ -72,8 +76,8 @@ button, input, textarea {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: var(--pink);
-    color: var(--white);
+    background-color: var(--primary-action);
+    color: var(--text-on-light);
     border: none;
     font-size: 2rem;
     display: flex;
@@ -83,16 +87,16 @@ button, input, textarea {
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
 }
-.fab:hover { background-color: #d05d92; transform: scale(1.1); }
+.fab:hover { background-color: #6d837a; transform: scale(1.1); }
 
 .fab-secondary {
-    background-color: var(--yellow);
-    color: var(--dark-bg);
+    background-color: var(--secondary-highlight);
+    color: var(--text-on-light);
     font-size: 1.5rem; /* smaller icon */
 }
 
 .fab-secondary:hover {
-    background-color: #d9c851;
+    background-color: #8fad8f;
 }
 
 /* --- Person Card --- */
@@ -105,19 +109,19 @@ button, input, textarea {
 
 /* --- Form --- */
 .form-container { max-width: 500px; margin: 0 auto; background-color: var(--light-bg); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }
-.form-container h2, .moments-section h2 { text-align: center; color: var(--yellow); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
+.form-container h2, .moments-section h2 { text-align: center; color: var(--secondary-highlight); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
 .form-container label { display: block; margin-bottom: 0.5rem; }
 .form-container input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); font-family: inherit; }
 .form-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
 .form-buttons button { flex-grow: 1; padding: 0.75rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-.form-buttons button[type="submit"] { background-color: var(--green); color: var(--dark-bg); }
+.form-buttons button[type="submit"] { background-color: var(--tertiary-accent); color: var(--text-on-light); }
 .form-buttons button[type="button"] { background-color: var(--transparent-white); color: var(--off-white); }
 
 /* --- Detail View --- */
 .back-button {
     background: var(--transparent-white);
     border: 1px solid var(--transparent-white);
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
@@ -127,28 +131,28 @@ button, input, textarea {
 }
 
 .back-button:hover {
-    background-color: var(--yellow);
-    color: var(--dark-bg);
+    background-color: var(--secondary-highlight);
+    color: var(--text-on-light);
 }
-.delete-person-button { background: none; border: 1px solid var(--pink); color: var(--pink); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
+.delete-person-button { background: none; border: 1px solid var(--primary-action); color: var(--primary-action); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
 .person-detail-header { text-align: center; margin-bottom: 2rem; animation: fadeIn 0.5s; }
-.detail-avatar-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--yellow); }
-.detail-avatar-icon { width: 120px; height: 120px; margin: 0 auto; border: 3px solid var(--yellow); }
+.detail-avatar-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--secondary-highlight); }
+.detail-avatar-icon { width: 120px; height: 120px; margin: 0 auto; border: 3px solid var(--secondary-highlight); }
 .detail-avatar-icon .fas { font-size: 60px; }
 .moments-section { max-width: 700px; margin: 0 auto; }
 #add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--light-bg); border: 1px solid var(--transparent-white); border-radius: 8px; padding: 1rem 1rem 60px 1rem; font-family: inherit; font-size: 1rem; color: var(--off-white); resize: vertical; }
-#add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--pink); color: var(--dark-bg); border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+#add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--primary-action); color: var(--text-on-light); border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; }
 .moments-list { list-style: none; padding: 0; margin-top: 2rem; }
 .moment-item { background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
 .moment-content { flex-grow: 1; }
-.moment-date { font-size: 0.8rem; color: var(--yellow); margin-bottom: 0.5rem; }
+.moment-date { font-size: 0.8rem; color: var(--secondary-highlight); margin-bottom: 0.5rem; }
 .moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
 .moment-controls { display: flex; gap: 0.5rem; }
 .moment-controls button { background: none; border: 1px solid var(--transparent-white); color: var(--off-white); border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
-.moment-controls .delete-moment-btn { border-color: var(--pink); color: var(--pink); }
-.moment-edit-textarea { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--yellow); border-radius: 4px; color: var(--off-white); font-family: inherit; font-size: 1rem; padding: 0.5rem; }
+.moment-controls .delete-moment-btn { border-color: var(--primary-action); color: var(--primary-action); }
+.moment-edit-textarea { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--secondary-highlight); border-radius: 4px; color: var(--off-white); font-family: inherit; font-size: 1rem; padding: 0.5rem; }
 
-.no-results { grid-column: 1 / -1; text-align: center; font-size: 1.2rem; color: var(--yellow); padding: 2rem; }
+.no-results { grid-column: 1 / -1; text-align: center; font-size: 1.2rem; color: var(--secondary-highlight); padding: 2rem; }
 
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -173,7 +177,7 @@ button, input, textarea {
 }
 
 #login-form-container h2, #register-form-container h2 {
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     margin-bottom: 1.5rem;
     font-size: 1.8rem;
 }
@@ -196,8 +200,8 @@ button, input, textarea {
     width: 100%;
     padding: 0.75rem;
     margin-top: 0.5rem;
-    background-color: var(--pink);
-    color: var(--dark-bg);
+    background-color: var(--primary-action);
+    color: var(--text-on-light);
     border: none;
     border-radius: 30px;
     font-weight: bold;
@@ -207,7 +211,7 @@ button, input, textarea {
 }
 
 #login-form button:hover, #register-form button:hover {
-    background-color: #d05d92;
+    background-color: #6d837a;
 }
 
 #login-form-container p, #register-form-container p {
@@ -216,7 +220,7 @@ button, input, textarea {
 }
 
 #login-form-container a, #register-form-container a {
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     text-decoration: none;
     font-weight: bold;
 }
@@ -228,8 +232,8 @@ button, input, textarea {
 /* --- Logout Button --- */
 #logout-btn {
     background: none;
-    border: 1px solid var(--pink);
-    color: var(--pink);
+    border: 1px solid var(--primary-action);
+    color: var(--primary-action);
     border-radius: 6px;
     padding: 0.4rem 0.8rem;
     cursor: pointer;
@@ -241,15 +245,15 @@ button, input, textarea {
 }
 
 #logout-btn:hover {
-    background-color: var(--pink);
-    color: var(--dark-bg);
+    background-color: var(--primary-action);
+    color: var(--text-on-light);
 }
 
 /* --- Header Buttons (e.g. Global Search) --- */
 .header-button {
     background: none;
-    border: 1px solid var(--light-blue);
-    color: var(--light-blue);
+    border: 1px solid var(--subtle-accent);
+    color: var(--subtle-accent);
     border-radius: 6px;
     padding: 0.4rem 0.8rem;
     cursor: pointer;
@@ -260,15 +264,15 @@ button, input, textarea {
 }
 
 .header-button:hover {
-    background-color: var(--light-blue);
-    color: var(--dark-bg);
+    background-color: var(--subtle-accent);
+    color: var(--text-on-light);
 }
 
 /* --- Loading Text --- */
 .loading-text {
     text-align: center;
     font-size: 1.2rem;
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     padding: 2rem;
 }
 
@@ -309,8 +313,8 @@ button, input, textarea {
 }
 
 .moment-tag {
-    background-color: var(--light-blue);
-    color: var(--dark-bg);
+    background-color: var(--subtle-accent);
+    color: var(--text-on-light);
     padding: 0.2rem 0.6rem;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -328,7 +332,7 @@ button, input, textarea {
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    border-left: 4px solid var(--pink); /* Add a little accent */
+    border-left: 4px solid var(--primary-action); /* Add a little accent */
 }
 
 .result-person-info {
@@ -340,7 +344,7 @@ button, input, textarea {
 }
 
 .result-person-info a {
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     font-weight: bold;
     text-decoration: none;
 }
@@ -387,7 +391,7 @@ button, input, textarea {
 }
 
 .modal-header h2 {
-    color: var(--yellow);
+    color: var(--secondary-highlight);
     margin: 0;
 }
 
@@ -407,8 +411,8 @@ button, input, textarea {
 }
 
 .modal-tag-btn {
-    background-color: var(--green);
-    color: var(--dark-bg);
+    background-color: var(--tertiary-accent);
+    color: var(--text-on-light);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -442,8 +446,8 @@ button, input, textarea {
 }
 
 .form-icon-btn {
-    background-color: var(--pink);
-    color: var(--dark-bg);
+    background-color: var(--primary-action);
+    color: var(--text-on-light);
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -501,8 +505,8 @@ button, input, textarea {
 }
 
 .new-moment-tag {
-    background-color: var(--light-blue);
-    color: var(--dark-bg);
+    background-color: var(--subtle-accent);
+    color: var(--text-on-light);
     padding: 0.2rem 0.4rem 0.2rem 0.8rem;
     border-radius: 12px;
     font-size: 0.9rem;
@@ -552,7 +556,7 @@ button, input, textarea {
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     transition: opacity 0.5s ease-in-out;
     opacity: 1;
-    border: 2px solid var(--green);
+    border: 2px solid var(--tertiary-accent);
 }
 
 .toast-notification.fade-out {
@@ -574,7 +578,7 @@ button, input, textarea {
     min-height: 24px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
-    color: var(--yellow);
+    color: var(--secondary-highlight);
 }
 
 .passcode-display {
@@ -593,7 +597,7 @@ button, input, textarea {
 }
 
 .passcode-digit.filled {
-    background-color: var(--yellow);
+    background-color: var(--secondary-highlight);
 }
 
 .passcode-keypad {
@@ -643,5 +647,5 @@ button, input, textarea {
 
 /* --- Hidden Mode Visuals --- */
 .hidden-mode .app-header h1 {
-    color: var(--light-blue);
+    color: var(--subtle-accent);
 }
