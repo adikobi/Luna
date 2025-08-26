@@ -42,16 +42,14 @@ button, input, textarea {
 
 .app-header.detail-header,
 .app-header.search-results-header {
-    position: relative;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
 }
 
 .app-header.detail-header h1,
 .app-header.search-results-header h1 {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0; /* Override default margin */
+    text-align: center;
 }
 .search-container { flex-grow: 1; min-width: 200px; }
 .search-container input { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); padding: 0.5rem 1rem; font-family: inherit; font-size: 1rem; }
