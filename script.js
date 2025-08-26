@@ -91,7 +91,7 @@ async function startApp(user, db) {
     let isHiddenMode = false; // App state: normal or hidden
     let currentUserData = {}; // Holds all data for the logged-in user
     const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
-    const avatarColor = #D1D8BE
+    const avatarColor = '#D1D8BE';
     const userDocRef = db.collection('users').doc(user.uid);
 
     const showPasscodeModal = () => {
