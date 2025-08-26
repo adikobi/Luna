@@ -473,7 +473,24 @@ async function startApp(user, db) {
     const renderAppShell = () => {
         const lockIconClass = isHiddenMode ? 'fa-lock-open' : 'fa-lock';
         const hiddenButtonTitle = isHiddenMode ? 'צא מאזור נסתר' : 'אזור נסתר';
-        appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1><div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div><button id="global-search-btn" class="header-button">חיפוש רגעים</button><button id="tag-filter-btn" class="header-button">סינון לפי תגית</button><button id="hidden-area-btn" class="header-button" title="${hiddenButtonTitle}"><i class="fas ${lockIconClass}"></i></button><button id="logout-btn">התנתק</button></header><main id="app-main"><div id="people-grid" class="people-grid"></div></main><button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>`;
+
+        // Remove the lock button from the header buttons
+        appContainer.innerHTML = `
+            <header class="app-header">
+                <h1>Luna</h1>
+                <div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div>
+                <button id="global-search-btn" class="header-button">חיפוש רגעים</button>
+                <button id="tag-filter-btn" class="header-button">סינון לפי תגית</button>
+                <button id="logout-btn">התנתק</button>
+            </header>
+            <main id="app-main">
+                <div id="people-grid" class="people-grid"></div>
+            </main>
+            <div class="fab-container">
+                <button id="hidden-area-btn" class="fab fab-secondary" title="${hiddenButtonTitle}"><i class="fas ${lockIconClass}"></i></button>
+                <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
+            </div>
+        `;
 
         appContainer.classList.toggle('hidden-mode', isHiddenMode);
 

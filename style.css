@@ -60,8 +60,40 @@ button, input, textarea {
 .search-container input { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); padding: 0.5rem 1rem; font-family: inherit; font-size: 1rem; }
 #app-main { padding: 1.5rem; }
 .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
-.fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 50%; background-color: var(--pink); color: var(--white); border: none; font-size: 2rem; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); cursor: pointer; transition: transform 0.2s, background-color 0.2s; z-index: 20; }
+.fab-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    z-index: 20;
+}
+.fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--pink);
+    color: var(--white);
+    border: none;
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
 .fab:hover { background-color: #d05d92; transform: scale(1.1); }
+
+.fab-secondary {
+    background-color: var(--yellow);
+    color: var(--dark-bg);
+    font-size: 1.5rem; /* smaller icon */
+}
+
+.fab-secondary:hover {
+    background-color: #d9c851;
+}
 
 /* --- Person Card --- */
 .person-card { background-color: var(--light-bg); border-radius: 8px; padding: 1rem; text-align: center; transition: transform 0.2s; cursor: pointer; animation: fadeIn 0.5s; }
@@ -230,20 +262,6 @@ button, input, textarea {
 .header-button:hover {
     background-color: var(--light-blue);
     color: var(--dark-bg);
-}
-
-#hidden-area-btn {
-    border-color: var(--yellow);
-    color: var(--yellow);
-}
-
-#hidden-area-btn:hover {
-    background-color: var(--yellow);
-    color: var(--dark-bg);
-}
-
-#hidden-area-btn i {
-    font-size: 1.1rem;
 }
 
 /* --- Loading Text --- */
@@ -543,6 +561,11 @@ button, input, textarea {
     text-align: center;
 }
 
+.passcode-modal-content .modal-header h2 {
+    font-family: 'Heebo', sans-serif;
+    font-size: 1.8rem; /* Reset to standard font and size */
+}
+
 .passcode-prompt {
     min-height: 24px;
     margin-bottom: 1rem;
@@ -581,8 +604,10 @@ button, input, textarea {
     color: var(--off-white);
     border-radius: 8px;
     padding: 1rem;
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-family: 'Heebo', sans-serif; /* Use standard font */
+    font-size: 1.2rem; /* Adjusted font size */
+    font-weight: 400; /* Normal weight */
+    text-align: left; /* Align to the left (right in RTL) */
     cursor: pointer;
     transition: background-color 0.2s;
 }
