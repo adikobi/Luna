@@ -7,10 +7,11 @@
   --text-on-light: #121212; /* Dark text for light backgrounds */
 
   /* New Palette */
-  --primary-action: #E5BEB5;   /* Was pink */
+  --primary-action: #E5BEB5;   /* Was pink, now pink */
+  --dark-pink: #896C6C
   --secondary-highlight: #819A91 /*#A7C1A8;  Was yellow not its dark green*/
-  --tertiary-accent: #EEE6CA; /* Was green */
-  --subtle-accent: #EEEFE0;   /* Was light-blue */
+  --tertiary-accent: #EEE6CA; /* Was green, now very light yellow */
+  --subtle-accent: #D1D8BE;   /* Was light-blue, now alry light green */
 
   --transparent-white: rgba(255, 255, 255, 0.1);
 }
@@ -38,7 +39,7 @@ button, input, textarea {
 .splash-title { font-size: 4rem; color: var(--white); margin-bottom: 0; }
 .splash-subtitle { font-size: 1.25rem; color: var(--white); opacity: 0.8; margin-bottom: 2.5rem; }
 #start-btn { background-color: var(--primary-action); color: var(--text-on-light); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
-#start-btn:hover { transform: scale(1.05); background-color: #6d837a; }
+#start-btn:hover { transform: scale(1.05); background-color: var(--dark-pink); }
 
 /* --- Main App Layout --- */
 .app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
@@ -87,7 +88,7 @@ button, input, textarea {
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
 }
-.fab:hover { background-color: #6d837a; transform: scale(1.1); }
+.fab:hover { background-color: var(--dark-pink); transform: scale(1.1); }
 
 .fab-secondary {
     background-color: var(--secondary-highlight);
