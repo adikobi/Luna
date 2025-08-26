@@ -11,6 +11,9 @@
   --transparent-white: rgba(255, 255, 255, 0.1);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    height: 100%;
+}
 body { font-family: 'Heebo', sans-serif; color: var(--off-white); background-color: var(--dark-bg); }
 
 button, input, textarea {
@@ -420,6 +423,19 @@ button, input, textarea {
 }
 
 /* --- Add Tags Modal Specifics --- */
+.add-tag-input-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.add-tag-input-container input {
+    flex-grow: 1;
+    margin-bottom: 0; /* Override default margin */
+}
+.add-tag-input-container button {
+    flex-shrink: 0;
+}
+
 .modal-footer {
     border-top: 1px solid var(--transparent-white);
     padding-top: 1rem;
@@ -471,4 +487,34 @@ button, input, textarea {
     line-height: 1;
     cursor: pointer;
     font-size: 1rem;
+}
+
+#staged-tags-container .moment-tags {
+    padding: 0.5rem;
+    background-color: var(--dark-bg);
+    border-radius: 8px;
+    margin-top: -0.5rem;
+    min-height: 40px;
+    justify-content: flex-start;
+}
+
+/* --- Toast Notification --- */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--green);
+    color: var(--dark-bg);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    z-index: 2000;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: opacity 0.5s ease-in-out;
+    opacity: 1;
+}
+
+.toast-notification.fade-out {
+    opacity: 0;
 }
