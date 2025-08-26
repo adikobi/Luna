@@ -1,88 +1,653 @@
 /* Final, complete stylesheet */
 :root {
-  --dark-bg: #121212;
-  --light-bg: #1E1E1E;
-  --off-white: #fcfaf7;
-  --white: #ffffff;
-  --yellow: #F6E05E;
-  --green: #48BB78;
-  --pink: #ED64A6;
-  --light-blue: #63B3ED;
-  --transparent-white: rgba(255, 255, 255, 0.1);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Heebo', sans-serif; color: var(--off-white); background-color: var(--dark-bg); }
-
-button, input, textarea {
-    font-family: inherit;
-}
-
-/* --- Splash Screen --- */
-#splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
-.logo-container { position: relative; width: 150px; height: 150px; margin-bottom: 1rem; }
-.moon-icon { font-size: 130px; position: absolute; top: 10px; left: 10px; color: var(--yellow); opacity: 0.8; transform: rotate(-15deg); }
-.stars { position: absolute; top: 10px; right: 0; width: 60px; height: 40px; }
-.stars i { position: absolute; animation: twinkle 2.5s ease-in-out infinite alternate; }
-.stars .fa-heart { color: var(--pink); }
-.stars .fa-star { color: var(--off-white); }
-.star-1 { top: 0; left: 20px; font-size: 12px; animation-delay: 0s; }
-.heart-star { top: 10px; left: 40px; font-size: 14px; animation-delay: 0.8s; }
-.star-2 { top: 25px; left: 15px; font-size: 12px; animation-delay: 1.5s; }
-.splash-title { font-size: 4rem; color: var(--white); margin-bottom: 0.5rem; }
-.splash-subtitle { font-size: 1.25rem; color: var(--white); opacity: 0.8; margin-bottom: 2.5rem; }
-#start-btn { background-color: var(--pink); color: var(--dark-bg); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
-#start-btn:hover { transform: scale(1.05); background-color: #d05d92; }
-
-/* --- Main App Layout --- */
-.app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; }
-.app-header h1 { font-size: 1.8rem; color: var(--yellow); margin: 0; }
-.search-container { flex-grow: 1; min-width: 200px; }
-.search-container input { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); padding: 0.5rem 1rem; font-family: inherit; font-size: 1rem; }
-#app-main { padding: 1.5rem; }
-.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
-.fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 50%; background-color: var(--pink); color: var(--white); border: none; font-size: 2rem; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); cursor: pointer; transition: transform 0.2s, background-color 0.2s; z-index: 20; }
-.fab:hover { background-color: #d05d92; transform: scale(1.1); }
-
-/* --- Person Card --- */
-.person-card { background-color: var(--light-bg); border-radius: 8px; padding: 1rem; text-align: center; transition: transform 0.2s; cursor: pointer; animation: fadeIn 0.5s; }
-.person-card:hover { transform: translateY(-5px); }
-.person-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--transparent-white); margin-bottom: 1rem; }
-.person-card h3 { font-size: 1.1rem; font-weight: 700; word-wrap: break-word; }
-.default-avatar { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto; }
-.default-avatar .fas { font-size: 50px; color: var(--white); opacity: 0.8; }
-
-/* --- Form --- */
-.form-container { max-width: 500px; margin: 0 auto; background-color: var(--light-bg); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }
-.form-container h2, .moments-section h2 { text-align: center; color: var(--yellow); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
-.form-container label { display: block; margin-bottom: 0.5rem; }
-.form-container input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); font-family: inherit; }
-.form-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
-.form-buttons button { flex-grow: 1; padding: 0.75rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-.form-buttons button[type="submit"] { background-color: var(--green); color: var(--dark-bg); }
-.form-buttons button[type="button"] { background-color: var(--transparent-white); color: var(--off-white); }
-
-/* --- Detail View --- */
-.back-button { background: none; border: none; color: var(--yellow); font-size: 1.2rem; cursor: pointer; padding: 0; }
-.delete-person-button { background: none; border: 1px solid var(--pink); color: var(--pink); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
-.person-detail-header { text-align: center; margin-bottom: 2rem; animation: fadeIn 0.5s; }
-.detail-avatar-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--yellow); }
-.detail-avatar-icon { width: 120px; height: 120px; margin: 0 auto; border: 3px solid var(--yellow); }
-.detail-avatar-icon .fas { font-size: 60px; }
-.moments-section { max-width: 700px; margin: 0 auto; }
-#add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--light-bg); border: 1px solid var(--transparent-white); border-radius: 8px; padding: 1rem; font-family: inherit; font-size: 1rem; color: var(--off-white); resize: vertical; margin-bottom: 0.5rem; }
-#add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--pink); color: var(--dark-bg); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-.moments-list { list-style: none; padding: 0; margin-top: 2rem; }
-.moment-item { background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
-.moment-content { flex-grow: 1; }
-.moment-date { font-size: 0.8rem; color: var(--yellow); margin-bottom: 0.5rem; }
-.moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
-.moment-controls { display: flex; gap: 0.5rem; }
-.moment-controls button { background: none; border: 1px solid var(--transparent-white); color: var(--off-white); border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
-.moment-controls .delete-moment-btn { border-color: var(--pink); color: var(--pink); }
-.moment-edit-textarea { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--yellow); border-radius: 4px; color: var(--off-white); font-family: inherit; font-size: 1rem; padding: 0.5rem; }
-
-.no-results { grid-column: 1 / -1; text-align: center; font-size: 1.2rem; color: var(--yellow); padding: 2rem; }
-
-/* --- Animations --- */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes twinkle { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+    --dark-bg: #121212;
+    --light-bg: #1E1E1E;
+    --off-white: #fcfaf7;
+    --white: #ffffff;
+    --text-on-light: #121212; /* Dark text for light backgrounds */
+  
+    /* New Palette */
+    --primary-action: #E5BEB5;   /* Was pink, now pink */
+    --dark-pink: #896C6C;
+    --secondary-highlight: #819A91; /*#A7C1A8;  Was yellow not its dark green*/
+    --tertiary-accent: #EEE6CA; /* Was green, now very light yellow */
+    --subtle-accent: #D1D8BE;   /* Was light-blue, now alry light green */
+  
+    --transparent-white: rgba(255, 255, 255, 0.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+      height: 100%;
+  }
+  body { font-family: 'Heebo', sans-serif; color: var(--off-white); background-color: var(--dark-bg); }
+  
+  button, input, textarea {
+      font-family: inherit;
+  }
+  
+  /* --- Splash Screen --- */
+  #splash-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; animation: fadeIn 1s ease-in-out; }
+  .logo-container { position: relative; width: 150px; height: 150px; margin-bottom: 1rem; }
+  .moon-icon { font-size: 130px; position: absolute; top: 10px; left: 10px; color: var(--tertiary-accent); opacity: 0.8; transform: rotate(-15deg); }
+  .stars { position: absolute; top: 10px; right: 0; width: 60px; height: 40px; }
+  .stars i { position: absolute; animation: twinkle 2.5s ease-in-out infinite alternate; }
+  .stars .fa-heart { color: var(--primary-action); }
+  .stars .fa-star { color: var(--tertiary-accent); }
+  .star-1 { top: 0; left: 20px; font-size: 12px; animation-delay: 0s; }
+  .heart-star { top: 10px; left: 40px; font-size: 14px; animation-delay: 0.8s; }
+  .star-2 { top: 25px; left: 15px; font-size: 12px; animation-delay: 1.5s; }
+  .splash-title { font-size: 5rem; color: var(--fcfaf7); margin-bottom: 0; font-family: 'Bebas Neue', 'Heebo', sans-serif;}
+  .splash-subtitle { font-size: 1.25rem; color: var(--fcfaf7); opacity: 0.8; margin-bottom: 2.5rem; }
+  #start-btn { background-color: var(--primary-action); color: var(--text-on-light); font-family: 'Heebo', sans-serif; font-weight: bold; border: none; border-radius: 30px; padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
+  #start-btn:hover { transform: scale(1.05); background-color: var(--dark-pink); }
+  
+  /* --- Main App Layout --- */
+  .app-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; background-color: var(--light-bg); border-bottom: 1px solid var(--transparent-white); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
+  .app-header h1 {
+      font-family: 'Bebas Neue', 'Heebo', sans-serif;
+      font-size: 3rem; /* Adjusted size for the new font */
+      color: var(--off-white);
+      margin: 0;
+  }
+  
+  .app-header.detail-header,
+  .app-header.search-results-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+  }
+  
+  .app-header.detail-header h1,
+  .app-header.search-results-header h1 {
+      text-align: center;
+  }
+  .search-container { flex-grow: 1; min-width: 200px; }
+  .search-container input { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); padding: 0.5rem 1rem; font-family: inherit; font-size: 1rem; }
+  #app-main { padding: 1.5rem; }
+  .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
+  .fab-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      z-index: 20;
+  }
+  .fab {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--primary-action);
+      color: var(--text-on-light);
+      border: none;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+  }
+  .fab:hover { background-color: var(--subtle-accent); transform: scale(1.1); }
+  
+  .fab-secondary {
+      background-color: var(--subtle-accent);
+      color: var(--text-on-light);
+      font-size: 1.5rem; /* smaller icon */
+  }
+  
+  .fab-secondary:hover {
+      background-color: var(--primary-action);
+  }
+  
+  /* --- Person Card --- */
+  .person-card { background-color: var(--light-bg); border-radius: 8px; padding: 1rem; text-align: center; transition: transform 0.2s; cursor: pointer; animation: fadeIn 0.5s; }
+  .person-card:hover { transform: translateY(-5px); }
+  .person-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--transparent-white); margin-bottom: 1rem; }
+  .person-card h3 { font-size: 1.1rem; font-weight: 700; word-wrap: break-word; }
+  .default-avatar { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto; }
+  .default-avatar .fas { font-size: 50px; color: var(--white); opacity: 0.8; }
+  
+  /* --- Form --- */
+  .form-container { max-width: 500px; margin: 0 auto; background-color: var(--light-bg); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }
+  .form-container h2, .moments-section h2 { text-align: center; color: var(--off-white); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
+  .form-container label { display: block; margin-bottom: 0.5rem; }
+  .form-container input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); font-family: inherit; }
+  .form-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
+  .form-buttons button { flex-grow: 1; padding: 0.75rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+  .form-buttons button[type="submit"] { background-color: var(--tertiary-accent); color: var(--text-on-light); }
+  .form-buttons button[type="button"] { background-color: var(--transparent-white); color: var(--off-white); }
+  
+  /* --- Detail View --- */
+  .back-button {
+      background-color: var(--secondary-highlight);
+      border: 1px solid var(--transparent-white);
+      color: var(--text-on-light);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .back-button:hover {
+      background: var(--transparent-white);
+      color: var(--secondary-highlight);
+  }
+  
+  .delete-person-button { background: none; border: 1px solid var(--primary-action); color: var(--primary-action); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .person-detail-header { text-align: center; margin-bottom: 2rem; animation: fadeIn 0.5s; }
+  .detail-avatar-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--secondary-highlight); }
+  .detail-avatar-icon { width: 120px; height: 120px; margin: 0 auto; border: 3px solid var(--tertiary-accent); }
+  .detail-avatar-icon .fas { font-size: 60px; }
+  .moments-section { max-width: 700px; margin: 0 auto; }
+  #add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--light-bg); border: 1px solid var(--transparent-white); border-radius: 8px; padding: 1rem 1rem 60px 1rem; font-family: inherit; font-size: 1rem; color: var(--off-white); resize: vertical; }
+  #add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--primary-action); color: var(--text-on-light); border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+  .moments-list { list-style: none; padding: 0; margin-top: 2rem; }
+  .moment-item { background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .moment-content { flex-grow: 1; }
+  .moment-date { font-size: 0.8rem; color: var(--primary-action); margin-bottom: 0.5rem; }
+  .moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
+  .moment-controls { display: flex; gap: 0.5rem; }
+  .moment-controls button { background: none; border: 1px solid var(--transparent-white); color: var(--off-white); border-radius: 30px; padding: 0.25rem 0.75rem; cursor: pointer; }
+  .moment-controls .delete-moment-btn { border-color: var(--primary-action); color: var(--primary-action); border-radius: 30px;}
+  .moment-edit-textarea { width: 100%; background-color: var(--dark-bg); border: 1px solid var(--secondary-highlight); border-radius: 4px; color: var(--off-white); font-family: inherit; font-size: 1rem; padding: 0.5rem; }
+  
+  .no-results { grid-column: 1 / -1; text-align: center; font-size: 1.2rem; color: var(--secondary-highlight); padding: 2rem; }
+  
+  /* --- Animations --- */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes twinkle { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+  
+  /* --- Auth Page --- */
+  #splash-screen, #auth-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+      padding: 1rem;
+  }
+  
+  #auth-forms-container {
+      max-width: 400px;
+      width: 100%;
+      margin-top: 2rem;
+  }
+  
+  #login-form-container h2, #register-form-container h2 {
+      color: var(--tertiary-accent);
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+  }
+  
+  #login-form input, #register-form input {
+      display: block;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      background-color: var(--light-bg);
+      border: 1px solid var(--transparent-white);
+      border-radius: 6px;
+      color: var(--off-white);
+      font-family: inherit;
+      font-size: 1rem;
+      text-align: right; /* For RTL */
+  }
+  
+  #login-form button, #register-form button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      background-color: var(--primary-action);
+      color: var(--text-on-light);
+      border: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+  }
+  
+  #login-form button:hover, #register-form button:hover {
+      background-color: var(--tertiary-accent);
+  }
+  
+  #login-form-container p, #register-form-container p {
+      margin-top: 1.5rem;
+      color: var(--off-white);
+  }
+  
+  #login-form-container a, #register-form-container a {
+      color: var(--secondary-highlight);
+      text-decoration: none;
+      font-weight: bold;
+  }
+  
+  #login-form-container a:hover, #register-form-container a:hover {
+      text-decoration: underline;
+  }
+  
+  /* --- Logout Button --- */
+  #logout-btn {
+      background: none;
+      border: 1px solid var(--primary-action);
+      color: var(--primary-action);
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      margin-right: auto; /* Pushes it to the left in RTL */
+      margin-left: 1rem; /* Spacing from search bar */
+      flex-shrink: 0; /* Prevent shrinking */
+  }
+  
+  #logout-btn:hover {
+      background-color: var(--primary-action);
+      color: var(--text-on-light);
+  }
+  
+  /* --- Header Buttons (e.g. Global Search) --- */
+  .header-button {
+      background: none;
+      border: 1px solid var(--subtle-accent);
+      color: var(--subtle-accent);
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      margin-left: 1rem;
+      flex-shrink: 0;
+  }
+  
+  .header-button:hover {
+      background-color: var(--subtle-accent);
+      color: var(--text-on-light);
+  }
+  
+  /* --- Loading Text --- */
+  .loading-text {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--off-white);
+      padding: 2rem;
+  }
+  
+  /* --- Moment Search --- */
+  .moment-search-container {
+      margin-bottom: 1.5rem;
+  }
+  
+  .moment-search-container input {
+      width: 100%;
+      background-color: var(--light-bg);
+      border: 1px solid var(--transparent-white);
+      border-radius: 20px;
+      color: var(--off-white);
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+  }
+  
+  /* --- Tags --- */
+  #moment-tags-input {
+      width: 100%;
+      background-color: var(--light-bg);
+      border: 1px solid var(--transparent-white);
+      border-radius: 6px;
+      color: var(--off-white);
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+  }
+  
+  .moment-tags {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+  }
+  
+  .moment-tag {
+      background-color: var(--subtle-accent);
+      color: var(--text-on-light);
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+  }
+  
+  /* --- Search Results View --- */
+  .search-results-list {
+      list-style: none;
+      padding: 0;
+  }
+  
+  .search-result-item {
+      background-color: var(--light-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary-action); /* Add a little accent */
+  }
+  
+  .result-person-info {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--transparent-white);
+      font-size: 0.9rem;
+      text-align: right;
+  }
+  
+  .result-person-info a {
+      color: var(--secondary-highlight);
+      font-weight: bold;
+      text-decoration: none;
+  }
+  
+  .result-person-info a:hover {
+      text-decoration: underline;
+  }
+  
+  .result-person-info a {
+      font-family: 'Heebo', sans-serif;
+  }
+  
+  /* --- Modal --- */
+  .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh; /* Use vh for more reliable full-screen on mobile */
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s;
+  }
+  
+  .modal-content {
+      background-color: var(--light-bg);
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  
+  .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--transparent-white);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+  }
+  
+  .modal-header h2 {
+      color: var(--off-white);
+      margin: 0;
+  }
+  
+  .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--off-white);
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+  }
+  
+  .modal-body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+  }
+  
+  .modal-tag-btn {
+      background-color: var(--tertiary-accent);
+      color: var(--text-on-light);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+  }
+  
+  .modal-tag-btn:hover {
+      transform: scale(1.05);
+  }
+  
+  @media (max-width: 768px) {
+      .app-header {
+          justify-content: flex-start;
+      }
+  }
+  
+  /* --- Redesigned Add Moment Form --- */
+  #add-moment-form {
+      position: relative;
+  }
+  
+  .floating-form-buttons {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem; /* RTL support means this is the bottom-right */
+      display: flex;
+      gap: 0.5rem;
+  }
+  
+  .form-icon-btn {
+      background-color: var(--primary-action);
+      color: var(--text-on-light);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+  }
+  
+  .form-icon-btn:hover {
+      transform: scale(1.1);
+  }
+  
+  /* --- Add Tags Modal Specifics --- */
+  .add-tag-input-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+  }
+  .add-tag-input-container input {
+      flex-grow: 1;
+      margin-bottom: 0; /* Override default margin */
+  }
+  .add-tag-input-container button {
+      flex-shrink: 0;
+  }
+  
+  .modal-footer {
+      border-top: 1px solid var(--transparent-white);
+      padding-top: 1rem;
+      margin-top: 1rem;
+      text-align: left; /* RTL support means this is the right */
+  }
+  
+  #new-tags-input {
+      width: 100%;
+      background-color: var(--dark-bg); /* Darker than modal bg */
+      border: 1px solid var(--transparent-white);
+      border-radius: 6px;
+      color: var(--off-white);
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      /* margin-bottom: 1rem; <-- This was causing the alignment issue */
+  }
+  
+  .new-moment-tags-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: 30px; /* Reserve some space */
+  }
+  
+  .new-moment-tag {
+      background-color: var(--subtle-accent);
+      color: var(--text-on-light);
+      padding: 0.2rem 0.4rem 0.2rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+  }
+  
+  .delete-tag-btn {
+      background: var(--dark-bg);
+      color: var(--off-white);
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      line-height: 1;
+      cursor: pointer;
+      font-size: 1rem;
+  }
+  
+  #staged-tags-container .moment-tags {
+      padding: 0.5rem;
+      background-color: var(--dark-bg);
+      border-radius: 8px;
+      margin-top: -0.5rem;
+      min-height: 40px;
+      justify-content: flex-start;
+  }
+  
+  /* --- Toast Notification --- */
+  .toast-notification {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--light-bg);
+      color: var(--off-white);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      z-index: 2000;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: opacity 0.5s ease-in-out;
+      opacity: 1;
+      border: 2px solid var(--tertiary-accent);
+  }
+  
+  .toast-notification.fade-out {
+      opacity: 0;
+  }
+  
+  /* --- Passcode Modal --- */
+  .passcode-modal-content {
+      max-width: 320px;
+      text-align: center;
+  }
+  
+  .passcode-modal-content .modal-header h2 {
+      font-family: 'Heebo', sans-serif;
+      font-size: 1.8rem; /* Reset to standard font and size */
+  }
+  
+  .passcode-prompt {
+      min-height: 24px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: var(--secondary-highlight);
+  }
+  
+  .passcode-display {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+  }
+  
+  .passcode-digit {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--off-white);
+      transition: background-color 0.2s;
+  }
+  
+  .passcode-digit.filled {
+      background-color: var(--secondary-highlight);
+  }
+  
+  .passcode-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      direction: ltr; /* Force LTR layout for the keypad */
+  }
+  
+  .keypad-btn {
+      background-color: var(--dark-bg);
+      border: 1px solid var(--transparent-white);
+      color: var(--off-white);
+      border-radius: 50%; /* Make it a circle */
+      width: 60px; /* Explicit width */
+      height: 60px; /* Explicit height */
+      padding: 0; /* Remove padding to center content */
+      font-family: 'Heebo', sans-serif; /* Use standard font */
+      font-size: 1.2rem; /* Adjusted font size */
+      font-weight: 400; /* Normal weight */
+      text-align: center; /* Center the number in the circle */
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex; /* Use flexbox for centering */
+      justify-content: center;
+      align-items: center;
+  }
+  
+  .keypad-btn:hover {
+      background-color: var(--transparent-white);
+  }
+  
+  .passcode-modal-content .modal-body {
+      flex-direction: column;
+  }
+  
+  .passcode-display.shake {
+      animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+  
+  /* --- Hidden Mode Visuals --- */
+  .hidden-mode .app-header h1 {
+      color: var(--subtle-accent);
+  }
