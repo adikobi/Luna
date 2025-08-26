@@ -285,6 +285,116 @@ async function startApp(user, db) {
         }
     };
 
+    const closeEditMomentModal = () => {
+        const modalOverlay = document.getElementById('edit-moment-modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.remove();
+        }
+        newMomentTags = []; // Clear temp tags on close
+    };
+
+    const openEditMomentModal = (personId, momentIndex) => {
+        const person = allPeople.find(p => p.id === personId);
+        if (!person) return;
+        const moment = person.moments[momentIndex];
+        if (!moment) return;
+
+        // Pre-fill the temporary tags state
+        newMomentTags = [...(moment.tags || [])];
+
+        const modalOverlay = document.createElement('div');
+        modalOverlay.id = 'edit-moment-modal-overlay';
+
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>עריכת רגע</h2>
+                    <button id="edit-modal-close-btn" class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="edit-moment-text" class="moment-edit-textarea">${moment.text}</textarea>
+                    <h4 style="margin-top: 1rem;">תגיות</h4>
+                    <div class="add-tag-input-container">
+                        <input type="text" id="edit-tags-input" placeholder="הקלד תגית...">
+                        <button type="button" id="edit-add-tag-btn" class="header-button">הוסף</button>
+                    </div>
+                    <div class="new-moment-tags-display"></div>
+                </div>
+                <div class="modal-footer">
+                     <button id="save-changes-btn" class="header-button">שמור שינויים</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+        renderNewMomentTags(); // Use the same renderer to show the pre-filled tags
+
+        // Add listeners for closing the modal
+        document.getElementById('edit-modal-close-btn').addEventListener('click', closeEditMomentModal);
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target.id === 'edit-moment-modal-overlay') {
+                closeEditMomentModal();
+            }
+        });
+
+        // Add listeners for managing tags within the edit modal
+        const addBtn = document.getElementById('edit-add-tag-btn');
+        const tagsInput = document.getElementById('edit-tags-input');
+        const tagsDisplay = document.querySelector('.new-moment-tags-display');
+
+        const addTag = () => {
+            if (!tagsInput) return;
+            const newTag = tagsInput.value.trim().replace(/#/g, '');
+            if (newTag && !newMomentTags.includes(newTag)) {
+                newMomentTags.push(newTag);
+                renderNewMomentTags();
+            }
+            tagsInput.value = '';
+            tagsInput.focus();
+        };
+
+        if(addBtn) addBtn.addEventListener('click', addTag);
+        if (tagsInput) {
+            tagsInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addTag();
+                }
+            });
+        }
+
+        if (tagsDisplay) {
+            tagsDisplay.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-tag-btn')) {
+                    const index = parseInt(event.target.parentElement.dataset.index, 10);
+                    newMomentTags.splice(index, 1);
+                    renderNewMomentTags();
+                }
+            });
+        }
+
+        // Listener for 'Save Changes'
+        document.getElementById('save-changes-btn').addEventListener('click', async () => {
+            const newText = document.getElementById('edit-moment-text').value;
+            if (!newText.trim()) {
+                alert("הרגע לא יכול להיות ריק.");
+                return;
+            }
+
+            const personIndex = allPeople.findIndex(p => p.id === personId);
+            if (personIndex !== -1 && allPeople[personIndex].moments[momentIndex]) {
+                // Update the moment object directly
+                allPeople[personIndex].moments[momentIndex].text = newText;
+                allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
+
+                await saveData(allPeople);
+                closeEditMomentModal();
+                renderPersonDetail(personId);
+                showToast("השינויים נשמרו!");
+            }
+        });
+    };
+
     const openTagFilterModal = () => {
         const allTags = allPeople.flatMap(p => p.moments.flatMap(m => m.tags || []));
         const uniqueTags = [...new Set(allTags)].sort();
@@ -572,16 +682,7 @@ async function startApp(user, db) {
                         renderPersonDetail(personId);
                     }
                 } else if (target.classList.contains('edit-moment-btn')) {
-                    const momentContent = momentItem.querySelector('.moment-content');
-                    const currentText = momentContent.querySelector('.moment-text').textContent;
-                    momentContent.innerHTML = `<textarea class="moment-edit-textarea">${currentText}</textarea>`;
-                    target.textContent = 'שמור';
-                    target.classList.replace('edit-moment-btn', 'save-moment-btn');
-                } else if (target.classList.contains('save-moment-btn')) {
-                    const newText = momentItem.querySelector('.moment-edit-textarea').value;
-                    allPeople[personIndex].moments[momentIndex].text = newText;
-                    await saveData(allPeople);
-                    renderPersonDetail(personId);
+                    openEditMomentModal(personId, momentIndex);
                 }
             });
         }
