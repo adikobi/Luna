@@ -133,7 +133,7 @@
   
   .back-button:hover {
       background: var(--transparent-white);
-      color: var(--secondary-highlight);
+      color: #FFFA8D;
   }
   
   .delete-person-button { background: none; border: 1px solid var(--primary-action); color: var(--primary-action); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
