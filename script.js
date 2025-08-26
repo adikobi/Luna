@@ -115,7 +115,7 @@ async function startApp(user, db) {
                         <div class="passcode-digit"></div>
                     </div>
                     <div class="passcode-keypad">
-                        ${['1', '2', '3', '4', '5', '6', '7', '8', '9', 'נקה', '0', '<i class="fas fa-backspace"></i>'].map(key =>
+                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 'נקה', 0, '<i class="fas fa-backspace"></i>'].map(key =>
                             `<button class="keypad-btn" data-key="${key}">${key}</button>`
                         ).join('')}
                     </div>

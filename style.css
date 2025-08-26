@@ -600,6 +600,7 @@ button, input, textarea {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
+    direction: ltr; /* Force LTR layout for the keypad */
 }
 
 .keypad-btn {
@@ -643,14 +644,4 @@ button, input, textarea {
 /* --- Hidden Mode Visuals --- */
 .hidden-mode .app-header h1 {
     color: var(--light-blue);
-}
-
-.hidden-mode #hidden-area-btn {
-    border-color: var(--light-blue);
-    color: var(--light-blue);
-}
-
-.hidden-mode #hidden-area-btn:hover {
-    background-color: var(--light-blue);
-    color: var(--dark-bg);
 }
