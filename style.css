@@ -110,7 +110,7 @@
   
   /* --- Form --- */
   .form-container { max-width: 500px; margin: 0 auto; background-color: var(--light-bg); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }
-  .form-container h2, .moments-section h2 { text-align: center; color: var(--subtle-accent); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
+  .form-container h2, .moments-section h2 { text-align: center; color: var(--off-white); margin-bottom: 1rem; margin-top: 1rem; border-bottom: 1px solid var(--transparent-white); padding-bottom: 0.5rem; }
   .form-container label { display: block; margin-bottom: 0.5rem; }
   .form-container input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; background-color: var(--dark-bg); border: 1px solid var(--transparent-white); border-radius: 6px; color: var(--off-white); font-family: inherit; }
   .form-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
@@ -120,7 +120,8 @@
   
   /* --- Detail View --- */
   .back-button {
-      background-color: var(--secondary-highlight);
+
+      background-color: #FFFA8D;
       border: 1px solid var(--transparent-white);
       color: var(--text-on-light);
       font-size: 1rem;
@@ -133,7 +134,7 @@
   
   .back-button:hover {
       background: var(--transparent-white);
-      color: var(--secondary-highlight);
+      color: #FFFA8D;
   }
   
   .delete-person-button { background: none; border: 1px solid var(--primary-action); color: var(--primary-action); border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; }
@@ -147,7 +148,7 @@
   .moments-list { list-style: none; padding: 0; margin-top: 2rem; }
   .moment-item { background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
   .moment-content { flex-grow: 1; }
-  .moment-date { font-size: 0.8rem; color: var(--dark-pink); margin-bottom: 0.5rem; }
+  .moment-date { font-size: 0.8rem; color: var(--primary-action); margin-bottom: 0.5rem; }
   .moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
   .moment-controls { display: flex; gap: 0.5rem; }
   .moment-controls button { background: none; border: 1px solid var(--transparent-white); color: var(--off-white); border-radius: 30px; padding: 0.25rem 0.75rem; cursor: pointer; }
@@ -274,7 +275,7 @@
   .loading-text {
       text-align: center;
       font-size: 1.2rem;
-      color: var(--dark-pink);
+      color: var(--off-white);
       padding: 2rem;
   }
   
@@ -393,7 +394,7 @@
   }
   
   .modal-header h2 {
-      color: var(--subtle-accent);
+      color: var(--off-white);
       margin: 0;
   }
   
