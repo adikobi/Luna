@@ -90,8 +90,6 @@ async function startApp(user, db) {
     let newMomentTags = []; // Temp state for tags of a new moment
     let isHiddenMode = false; // App state: normal or hidden
     let currentUserData = {}; // Holds all data for the logged-in user
-    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
-    const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
     const showPasscodeModal = () => {
@@ -262,8 +260,7 @@ async function startApp(user, db) {
             grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
         } else {
             grid.innerHTML = peopleToRender.map((person, index) => {
-                const color = avatarColor;
-                const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
+                const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar"><i class="fas fa-user"></i></div>`;
                 return `<div class="person-card" data-person-id="${person.id}">${avatarHTML}<h3>${person.name}</h3></div>`;
             }).join('');
             document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
@@ -321,10 +318,9 @@ async function startApp(user, db) {
     const renderPersonDetail = (personId) => {
         const person = allPeople.find(p => p.id === personId);
         if (!person) { renderAppShell(); return; }
-        const color = avatarColor;
-        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
+        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>Luna</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}<h2>${person.name}</h2></div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -346,7 +342,7 @@ async function startApp(user, db) {
                 : '';
 
             return `
-                <li class="search-result-item">
+                <li class="search-result-item" data-person-id="${result.personId}" data-moment-index="${result.originalMomentIndex}">
                     <div class="moment-content">
                         <p class="moment-date">${date}</p>
                         <p class="moment-text">${result.text}</p>
@@ -354,6 +350,9 @@ async function startApp(user, db) {
                     </div>
                     <div class="result-person-info">
                         <p>מתוך: <a href="#" class="person-link" data-person-id="${result.personId}">${result.personName}</a></p>
+                    </div>
+                    <div class="moment-controls">
+                        <button class="edit-moment-btn"><i class="fas fa-pencil-alt"></i></button>
                     </div>
                 </li>
             `;
@@ -387,11 +386,19 @@ async function startApp(user, db) {
         const mainContent = document.getElementById('app-main');
         if (mainContent) {
             mainContent.addEventListener('click', (event) => {
-                const target = event.target.closest('.person-link');
-                if (target) {
+                const personLink = event.target.closest('.person-link');
+                if (personLink) {
                     event.preventDefault();
-                    const personId = parseInt(target.dataset.personId, 10);
+                    const personId = parseInt(personLink.dataset.personId, 10);
                     renderPersonDetail(personId);
+                }
+
+                const editButton = event.target.closest('.edit-moment-btn');
+                if (editButton) {
+                    const searchResultItem = editButton.closest('.search-result-item');
+                    const personId = parseInt(searchResultItem.dataset.personId, 10);
+                    const momentIndex = parseInt(searchResultItem.dataset.momentIndex, 10);
+                    openEditMomentModal(personId, momentIndex);
                 }
             });
         }
@@ -401,10 +408,11 @@ async function startApp(user, db) {
         const searchTerm = event.target.value.toLowerCase();
 
         const allMoments = allPeople.flatMap(person =>
-            (person.moments || []).map(moment => ({
+            (person.moments || []).map((moment, index) => ({
                 ...moment,
                 personId: person.id,
-                personName: person.name
+                personName: person.name,
+                originalMomentIndex: index
             }))
         );
 
@@ -501,10 +509,11 @@ async function startApp(user, db) {
         document.getElementById('search-bar').addEventListener('input', handleSearch);
         document.getElementById('global-search-btn').addEventListener('click', () => {
             const allMoments = allPeople.flatMap(person =>
-                (person.moments || []).map(moment => ({
+                (person.moments || []).map((moment, index) => ({
                     ...moment,
                     personId: person.id,
-                    personName: person.name
+                    personName: person.name,
+                    originalMomentIndex: index
                 }))
             );
             renderSearchResultsView(allMoments); // Pass all moments to the view
