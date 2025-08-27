@@ -73,9 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (splashScreen) splashScreen.style.display = 'none';
 
             if (user) {
+                authContainer.style.display = 'none';
                 appContainer.style.display = 'block';
                 startApp(user, db);
             } else {
+                appContainer.style.display = 'none';
                 authContainer.style.display = 'flex';
             }
         }, 1500);
