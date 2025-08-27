@@ -320,7 +320,7 @@ async function startApp(user, db) {
         if (!person) { renderAppShell(); return; }
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>Luna</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}<h2>${person.name}</h2></div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>Luna</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}<h2>${person.name}</h2></div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><div class="moments-container-card"><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -352,7 +352,7 @@ async function startApp(user, db) {
                         <p>מתוך: <a href="#" class="person-link" data-person-id="${result.personId}">${result.personName}</a></p>
                     </div>
                     <div class="moment-controls">
-                        <button class="edit-moment-btn"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="edit-moment-btn">ערוך</button>
                     </div>
                 </li>
             `;
