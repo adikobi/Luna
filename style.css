@@ -702,14 +702,44 @@
   }
 
   @media (max-width: 768px) {
+    .app-header {
+        justify-content: flex-start;
+    }
     .app-header.search-results-header {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+        row-gap: 1rem;
+    }
+    .app-header.search-results-header > .back-button {
+        flex-basis: 50px; /* Give it a fixed base width */
+    }
+    .app-header.search-results-header h1 {
+        flex-grow: 1;
+        text-align: center;
+        margin: 0 1rem; /* Add some space from the edges */
     }
     .app-header.search-results-header .search-container {
         width: 100%;
         order: 3; /* Make the search bar appear on the next line */
-        margin-top: 1rem;
+    }
+
+    .app-header.detail-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+    }
+
+    .header-actions-container {
+      display: flex;
+      width: 100%;
+      gap: 0.5rem;
+      order: 4; /* Ensure it comes after other elements */
+    }
+
+    .header-actions-container > button {
+      flex: 1;
+      padding: 0.4rem 0.2rem;
+      font-size: 0.8rem;
     }
   }

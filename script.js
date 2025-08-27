@@ -480,9 +480,11 @@ async function startApp(user, db) {
             <header class="app-header">
                 <h1>Luna</h1>
                 <div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div>
-                <button id="global-search-btn" class="header-button">חיפוש רגעים</button>
-                <button id="tag-filter-btn" class="header-button">סינון לפי תגית</button>
-                <button id="logout-btn">התנתק</button>
+                <div class="header-actions-container">
+                    <button id="global-search-btn" class="header-button">חיפוש רגעים</button>
+                    <button id="tag-filter-btn" class="header-button">סינון לפי תגית</button>
+                    <button id="logout-btn">התנתק</button>
+                </div>
             </header>
             <main id="app-main">
                 <div id="people-grid" class="people-grid"></div>
