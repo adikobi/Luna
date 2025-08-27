@@ -90,6 +90,8 @@ async function startApp(user, db) {
     let newMomentTags = []; // Temp state for tags of a new moment
     let isHiddenMode = false; // App state: normal or hidden
     let currentUserData = {}; // Holds all data for the logged-in user
+    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
+    const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
     const showPasscodeModal = () => {
@@ -260,7 +262,8 @@ async function startApp(user, db) {
             grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
         } else {
             grid.innerHTML = peopleToRender.map((person, index) => {
-                const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar"><i class="fas fa-user"></i></div>`;
+                const color = avatarColor;
+                const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
                 return `<div class="person-card" data-person-id="${person.id}">${avatarHTML}<h3>${person.name}</h3></div>`;
             }).join('');
             document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
@@ -318,7 +321,8 @@ async function startApp(user, db) {
     const renderPersonDetail = (personId) => {
         const person = allPeople.find(p => p.id === personId);
         if (!person) { renderAppShell(); return; }
-        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon"><i class="fas fa-user"></i></div>`;
+        const color = avatarColor;
+        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
         appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
