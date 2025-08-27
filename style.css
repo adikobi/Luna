@@ -146,8 +146,9 @@
   .delete-person-button { background: none; border: 1px solid var(--primary-action); color: var(--primary-action); border-radius: 30px; padding: 0.4rem 0.8rem; cursor: pointer; }
   .person-detail-header {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
       margin-bottom: 2rem;
       animation: fadeIn 0.5s;
   }
