@@ -830,6 +830,10 @@ async function startApp(user, db) {
             });
             console.log('Service Worker registered with scope:', swRegistration.scope);
 
+            // Wait for the service worker to be active
+            await navigator.serviceWorker.ready;
+            console.log('Service Worker is active.');
+
             // Request permission to receive notifications
             await Notification.requestPermission();
             console.log('Notification permission granted.');
