@@ -822,12 +822,20 @@ async function startApp(user, db) {
         const messaging = firebase.messaging();
 
         try {
+            // For GitHub Pages projects in a subdirectory (e.g., username.github.io/RepoName),
+            // we need to manually register the service worker with the correct path and scope.
+            // NOTE: If the repository name changes from "Luna", this path needs to be updated.
+            const swRegistration = await navigator.serviceWorker.register('/Luna/firebase-messaging-sw.js', {
+                scope: '/Luna/'
+            });
+            console.log('Service Worker registered with scope:', swRegistration.scope);
+
             // Request permission to receive notifications
             await Notification.requestPermission();
             console.log('Notification permission granted.');
 
-            // Get the user's FCM token
-            const token = await messaging.getToken();
+            // Get the user's FCM token using the specific service worker
+            const token = await messaging.getToken({ serviceWorkerRegistration: swRegistration });
             console.log('FCM Token:', token);
 
             // Save the token to Firestore for the current user
