@@ -800,6 +800,10 @@ async function startApp(user, db) {
 
             try {
                 if (reminderDate) {
+                    if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                        showGoogleAuthPrompt();
+                        return; // Stop submission. User must connect and resubmit.
+                    }
                     await createCalendarEvent(momentText, reminderDate);
                     showToast("תזכורת נוצרה ביומן גוגל!");
                 }
@@ -904,11 +908,39 @@ async function startApp(user, db) {
         }
     }
 
+    const showGoogleAuthPrompt = () => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>חיבור ליומן גוגל</h2>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <p>כדי ליצור תזכורת, יש לחבר תחילה את חשבון גוגל שלך.</p>
+                </div>
+                <div class="modal-footer" style="justify-content: center; display: flex; gap: 1rem;">
+                    <button id="connect-google-now-btn" class="header-button">התחבר עכשיו</button>
+                    <button id="cancel-google-auth-btn" class="header-button" style="background-color: var(--transparent-white); color: var(--text-primary);">ביטול</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalOverlay);
+
+        const closeModal = () => modalOverlay.remove();
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn') || e.target.closest('#cancel-google-auth-btn')) {
+                closeModal();
+            } else if (e.target.closest('#connect-google-now-btn')) {
+                handleAuthClick(); // Trigger Google Sign-In
+                closeModal();
+            }
+        });
+    };
+
     function createCalendarEvent(summary, dateTime) {
-        if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-            alert("יש להתחבר ליומן גוגל תחילה דרך הפרופיל.");
-            return Promise.reject(new Error("User not signed in to Google."));
-        }
         if (!isGoogleApiReady) {
             alert("שירות יומן גוגל עדיין נטען, נסה שוב בעוד מספר רגעים.");
             return Promise.reject(new Error("Google API not ready."));
