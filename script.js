@@ -96,6 +96,17 @@ async function startApp(user, db) {
     const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
+    const linkify = (text) => {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, (url) => {
+            let href = url;
+            if (!href.startsWith('http')) {
+                href = 'https://' + href;
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-green); text-decoration: underline;">${url}</a>`;
+        });
+    };
+
     const showPasscodeModal = () => {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
@@ -304,10 +315,21 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
+            const imageHTML = moment.imageUrl ? `<div class="moment-image-container"><img src="${moment.imageUrl}" alt="Moment image"></div>` : '';
+
+            const reminderHTML = moment.reminderDate
+                ? `<div class="moment-reminder">
+                     <i class="fas fa-bell"></i>
+                     <span>${new Date(moment.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                   </div>`
+                : '';
+
             return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
                 <div class="moment-content">
+                    ${imageHTML}
+                    ${reminderHTML}
                     <p class="moment-date">${date}</p>
-                    <p class="moment-text">${moment.text}</p>
+                    <p class="moment-text">${linkify(moment.text)}</p>
                     ${tagsHTML}
                 </div>
                 <div class="moment-controls">
@@ -326,7 +348,7 @@ async function startApp(user, db) {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..."></textarea><div id="reminder-container" style="display: none; margin-top: 1rem;"><label for="moment-reminder-input">תזכורת:</label><input type="datetime-local" id="moment-reminder-input"></div><div id="image-preview-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-reminder-btn" class="form-icon-btn" title="הוסף תזכורת"><i class="fas fa-bell"></i></button><label for="moment-image-input" class="form-icon-btn" title="הוסף תמונה"><i class="fas fa-camera"></i></label><input type="file" id="moment-image-input" accept="image/*" style="display: none;"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -347,11 +369,22 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
+            const imageHTML = result.imageUrl ? `<div class="moment-image-container"><img src="${result.imageUrl}" alt="Moment image"></div>` : '';
+
+            const reminderHTML = result.reminderDate
+                ? `<div class="moment-reminder">
+                     <i class="fas fa-bell"></i>
+                     <span>${new Date(result.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                   </div>`
+                : '';
+
             return `
                 <li class="search-result-item">
                     <div class="moment-content">
+                        ${imageHTML}
+                        ${reminderHTML}
                         <p class="moment-date">${date}</p>
-                        <p class="moment-text">${result.text}</p>
+                        <p class="moment-text">${linkify(result.text)}</p>
                         ${tagsHTML}
                     </div>
                     <div class="result-person-info">
@@ -435,6 +468,44 @@ async function startApp(user, db) {
             }
         });
     };
+
+    const renderUserProfileModal = (currentUser) => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>פרופיל משתמש</h2>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body user-profile-body">
+                    <p><strong>אימייל:</strong> ${currentUser.email}</p>
+                    <button id="password-reset-btn" class="header-button">אפס סיסמה</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalOverlay);
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
+                modalOverlay.remove();
+            }
+
+            if (e.target.closest('#password-reset-btn')) {
+                const auth = firebase.auth();
+                auth.sendPasswordResetEmail(currentUser.email)
+                    .then(() => {
+                        showToast('נשלח מייל לאיפוס סיסמה.');
+                        modalOverlay.remove();
+                    })
+                    .catch((error) => {
+                        console.error('Password reset error:', error);
+                        alert(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
+                    });
+            }
+        });
+    };
+
     const openEditMomentModal = (personId, momentIndex) => {
         const person = allPeople.find(p => p.id === personId);
         const moment = person?.moments[momentIndex];
@@ -480,7 +551,7 @@ async function startApp(user, db) {
         // Remove the lock button from the header buttons
         appContainer.innerHTML = `
             <header class="app-header">
-                <h1>Luna</h1>
+                <h1 id="luna-title" style="cursor: pointer;">Luna</h1>
                 <div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div>
                 <div class="header-actions-container">
                     <button id="global-search-btn" class="header-button">חיפוש רגעים</button>
@@ -522,6 +593,7 @@ async function startApp(user, db) {
             }
         });
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+        document.getElementById('luna-title').addEventListener('click', () => renderUserProfileModal(user));
     };
 
     const handleAddPerson = async (event) => {
@@ -655,10 +727,60 @@ async function startApp(user, db) {
 
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
-
         document.getElementById('add-tags-btn').addEventListener('click', openAddTagsModal);
 
         const stagedTagsContainer = document.getElementById('staged-tags-container');
+        const momentSearchInput = document.getElementById('moment-search-bar');
+        const deletePersonBtn = document.getElementById('delete-person-btn');
+        const addMomentForm = document.getElementById('add-moment-form');
+        const momentsList = document.querySelector('.moments-list');
+        const imageInput = document.getElementById('moment-image-input');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const toggleReminderBtn = document.getElementById('toggle-reminder-btn');
+        const reminderContainer = document.getElementById('reminder-container');
+
+        let imageFile = null; // To hold the selected file
+
+        if (toggleReminderBtn && reminderContainer) {
+            toggleReminderBtn.addEventListener('click', () => {
+                const isHidden = reminderContainer.style.display === 'none';
+                reminderContainer.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    // Optional: focus the input when shown
+                    reminderContainer.querySelector('input').focus();
+                }
+            });
+        }
+
+        // --- Event Listener for Image Preview ---
+        if (imageInput) {
+            imageInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    imageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreviewContainer.innerHTML = `
+                            <div class="image-preview">
+                                <img src="${e.target.result}" alt="Image preview">
+                                <button type="button" class="remove-image-btn">&times;</button>
+                            </div>`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (imagePreviewContainer) {
+            imagePreviewContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-image-btn')) {
+                    imageFile = null;
+                    if (imageInput) imageInput.value = ''; // Clear the file input
+                    imagePreviewContainer.innerHTML = '';
+                }
+            });
+        }
+
         if (stagedTagsContainer) {
             stagedTagsContainer.addEventListener('click', (event) => {
                 if (event.target.classList.contains('delete-tag-btn')) {
@@ -669,57 +791,86 @@ async function startApp(user, db) {
             });
         }
 
-        const momentSearchInput = document.getElementById('moment-search-bar');
         if (momentSearchInput) {
             momentSearchInput.addEventListener('input', (event) => {
                 const searchTerm = event.target.value;
                 const person = allPeople.find(p => p.id === personId);
-                if (person) {
-                    renderFilteredMoments(person, searchTerm);
+                if (person) renderFilteredMoments(person, searchTerm);
+            });
+        }
+
+        if (deletePersonBtn) {
+            deletePersonBtn.addEventListener('click', async () => {
+                if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
+                    allPeople = allPeople.filter(p => p.id !== personId);
+                    await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+                    renderAppShell();
                 }
             });
         }
 
-        document.getElementById('delete-person-btn').addEventListener('click', async () => {
-            if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
-                allPeople = allPeople.filter(p => p.id !== personId);
-                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                renderAppShell();
-            }
-        });
+        if (addMomentForm) {
+            addMomentForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const momentText = document.getElementById('moment-text-input').value;
 
-        document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const momentText = document.getElementById('moment-text-input').value;
+                if (!momentText.trim() && !imageFile) {
+                    alert("הרגע לא יכול להיות ריק (יש להוסיף טקסט או תמונה).");
+                    return;
+                }
 
-            if (!momentText.trim()) return;
+                const submitBtn = addMomentForm.querySelector('button[type="submit"]');
+                if(submitBtn) submitBtn.disabled = true;
 
-            const personIndex = allPeople.findIndex(p => p.id === personId);
-            if (personIndex !== -1) {
-                const newMoment = {
-                    id: Date.now(),
-                    date: new Date().toLocaleDateString('en-CA'),
-                    text: momentText,
-                    tags: [...newMomentTags] // Use the tags from the modal's state
-                };
-                allPeople[personIndex].moments.unshift(newMoment);
-                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+                let imageUrl = null;
+                if (imageFile) {
+                    const storageRef = firebase.storage().ref();
+                    const imagePath = `moment_images/${user.uid}/${Date.now()}_${imageFile.name}`;
+                    const imageRef = storageRef.child(imagePath);
+                    try {
+                        const snapshot = await imageRef.put(imageFile);
+                        imageUrl = await snapshot.ref.getDownloadURL();
+                    } catch (error) {
+                        console.error("Error uploading image: ", error);
+                        alert("שגיאה בהעלאת התמונה.");
+                        if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+                }
 
-                showToast("הרגע נשמר בהצלחה!");
-                newMomentTags = []; // Clear the temporary tags state
-                renderPersonDetail(personId);
-            }
-        });
+                const personIndex = allPeople.findIndex(p => p.id === personId);
+                if (personIndex !== -1) {
+                    const reminderInput = document.getElementById('moment-reminder-input');
+                    const reminderDate = reminderInput && reminderInput.value ? new Date(reminderInput.value).toISOString() : null;
 
-        const momentsList = document.querySelector('.moments-list');
+                    const newMoment = {
+                        id: Date.now(),
+                        date: new Date().toLocaleDateString('en-CA'),
+                        text: momentText,
+                        tags: [...newMomentTags],
+                        imageUrl: imageUrl,
+                        reminderDate: reminderDate
+                    };
+                    allPeople[personIndex].moments.unshift(newMoment);
+                    await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+
+                    showToast("הרגע נשמר בהצלחה!");
+                    newMomentTags = [];
+                    imageFile = null;
+                    renderPersonDetail(personId);
+                }
+            });
+        }
+
         if (momentsList) {
             momentsList.addEventListener('click', async (event) => {
-                const personIndex = allPeople.findIndex(p => p.id === personId);
-                if (personIndex === -1) return;
                 const target = event.target;
                 const momentItem = target.closest('.moment-item');
                 if (!momentItem) return;
+
                 const momentIndex = parseInt(momentItem.dataset.momentIndex, 10);
+                const personIndex = allPeople.findIndex(p => p.id === personId);
+                if (personIndex === -1) return;
 
                 if (target.classList.contains('delete-moment-btn')) {
                     if (confirm('האם למחוק את הרגע?')) {
@@ -729,6 +880,12 @@ async function startApp(user, db) {
                     }
                 } else if (target.classList.contains('edit-moment-btn')) {
                     openEditMomentModal(personId, momentIndex);
+                } else if (target.tagName === 'IMG' && target.closest('.moment-image-container')) {
+                    const modalOverlay = document.createElement('div');
+                    modalOverlay.className = 'modal-overlay image-viewer-modal';
+                    modalOverlay.innerHTML = `<div class="modal-content" style="background: none; box-shadow: none; padding: 0;"><img src="${target.src}" style="max-width: 90vw; max-height: 80vh; display: block; margin: auto; border-radius: 8px;"><button class="modal-close-btn" style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.5); border-radius: 50%;">&times;</button></div>`;
+                    document.body.appendChild(modalOverlay);
+                    modalOverlay.addEventListener('click', () => modalOverlay.remove());
                 }
             });
         }
