@@ -160,7 +160,7 @@
   .detail-avatar-icon { width: 80px; height: 80px; }
   .detail-avatar-icon .fas { font-size: 40px; }
   .moments-section { max-width: 700px; margin: 0 auto; }
-  #add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--background-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1rem 60px 1rem; font-family: inherit; font-size: 1rem; color: var(--text-primary); resize: vertical; }
+  #add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--background-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; font-family: inherit; font-size: 1rem; color: var(--text-primary); resize: vertical; }
   #add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--primary-action); color: var(--text-on-accent); border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; }
   .moments-list { list-style: none; padding: 0; margin-top: 2rem; }
   .moments-container-card {
@@ -485,18 +485,17 @@
 
   /* --- Redesigned Add Moment Form --- */
   #add-moment-form {
-      position: relative;
+      /* No longer needs to be a positioning context */
   }
 
   .floating-form-buttons {
-      position: absolute;
-      bottom: 1rem;
-      left: 1rem; /* RTL support means this is the bottom-right */
       display: flex;
       gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
   }
 
-  .form-icon-btn {
+  button.form-icon-btn, label.form-icon-btn {
       background-color: var(--primary-action);
       color: var(--text-on-accent);
       border: none;
@@ -510,6 +509,7 @@
       cursor: pointer;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       transition: transform 0.2s;
+      padding: 0;
   }
 
   .form-icon-btn:hover {
