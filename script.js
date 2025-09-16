@@ -99,8 +99,8 @@ async function startApp(user, db) {
     // --- Google Calendar API Configuration ---
     // NOTE TO USER: Replace these placeholder values with your actual API Key and Client ID.
     const GOOGLE_API_CONFIG = {
-        API_KEY: "YOUR_API_KEY",
-        CLIENT_ID: "YOUR_CLIENT_ID.apps.googleusercontent.com",
+        API_KEY: "AIzaSyAwXwYwTbB6LgNzsDG7-UJTpvxtRe7RRjk",
+        CLIENT_ID: "621008201851-be537rltk6o8csjvnom7m0edpiujt9a7.apps.googleusercontent.com",
         DISCOVERY_DOCS: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
         SCOPES: "https://www.googleapis.com/auth/calendar.events"
     };
