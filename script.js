@@ -96,15 +96,6 @@ async function startApp(user, db) {
     const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
-    // --- Google Calendar API Configuration ---
-    // NOTE TO USER: Replace these placeholder values with your actual API Key and Client ID.
-    const GOOGLE_API_CONFIG = {
-        API_KEY: "AIzaSyAwXwYwTbB6LgNzsDG7-UJTpvxtRe7RRjk",
-        CLIENT_ID: "621008201851-be537rltk6o8csjvnom7m0edpiujt9a7.apps.googleusercontent.com",
-        DISCOVERY_DOCS: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-        SCOPES: "https://www.googleapis.com/auth/calendar.events"
-    };
-
     const linkify = (text) => {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         return text.replace(urlRegex, (url) => {
@@ -484,10 +475,6 @@ async function startApp(user, db) {
                 <div class="modal-body user-profile-body">
                     <p><strong>אימייל:</strong> ${currentUser.email}</p>
                     <button id="password-reset-btn" class="header-button">אפס סיסמה</button>
-                    <div class="google-cal-section">
-                        <p><strong>סטטוס יומן גוגל:</strong> <span id="google-auth-status">לא מחובר</span></p>
-                        <button id="google-auth-btn" class="header-button">חבר את יומן גוגל</button>
-                    </div>
                 </div>
             </div>
         `;
@@ -509,14 +496,7 @@ async function startApp(user, db) {
                         alert(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
                     });
             }
-
-            if (e.target.closest('#google-auth-btn')) {
-                handleAuthClick();
-            }
         });
-
-        // Update the status when the modal is opened
-        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
     };
 
     const openEditMomentModal = (personId, momentIndex) => {
@@ -787,48 +767,30 @@ async function startApp(user, db) {
         document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const momentText = document.getElementById('moment-text-input').value;
-            const reminderInput = document.getElementById('moment-reminder-input');
-            const reminderDate = reminderInput && reminderInput.value ? new Date(reminderInput.value).toISOString() : null;
 
             if (!momentText.trim()) {
                 alert("הרגע לא יכול להיות ריק.");
                 return;
             }
 
-            const submitBtn = event.currentTarget.querySelector('button[type="submit"]');
-            if(submitBtn) submitBtn.disabled = true;
+            const personIndex = allPeople.findIndex(p => p.id === personId);
+            if (personIndex !== -1) {
+                const reminderInput = document.getElementById('moment-reminder-input');
+                const reminderDate = reminderInput && reminderInput.value ? new Date(reminderInput.value).toISOString() : null;
 
-            try {
-                if (reminderDate) {
-                    if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                        showGoogleAuthPrompt();
-                        return; // Stop submission. User must connect and resubmit.
-                    }
-                    await createCalendarEvent(momentText, reminderDate);
-                    showToast("תזכורת נוצרה ביומן גוגל!");
-                }
+                const newMoment = {
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString('en-CA'),
+                    text: momentText,
+                    tags: [...newMomentTags],
+                    reminderDate: reminderDate
+                };
+                allPeople[personIndex].moments.unshift(newMoment);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
 
-                const personIndex = allPeople.findIndex(p => p.id === personId);
-                if (personIndex !== -1) {
-                    const newMoment = {
-                        id: Date.now(),
-                        date: new Date().toLocaleDateString('en-CA'),
-                        text: momentText,
-                        tags: [...newMomentTags],
-                        reminderDate: reminderDate // Still save it for display in-app
-                    };
-                    allPeople[personIndex].moments.unshift(newMoment);
-                    await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                    showToast("הרגע נשמר בהצלחה!");
-                    newMomentTags = [];
-                    renderPersonDetail(personId);
-                }
-            } catch (error) {
-                console.error("Error saving moment or calendar event:", error);
-                // The alert inside createCalendarEvent will handle user feedback
-                // Or add a generic one here if needed.
-            } finally {
-                if(submitBtn) submitBtn.disabled = false;
+                showToast("הרגע נשמר בהצלחה!");
+                newMomentTags = [];
+                renderPersonDetail(personId);
             }
         });
 
@@ -855,127 +817,8 @@ async function startApp(user, db) {
         }
     };
 
-    // --- Google Calendar Integration ---
-    let isGoogleApiReady = false;
-
-    function handleClientLoad() {
-        if (gapi) {
-            gapi.load('client:auth2', initClient);
-        }
-    }
-
-    function initClient() {
-        gapi.client.init({
-            apiKey: GOOGLE_API_CONFIG.API_KEY,
-            clientId: GOOGLE_API_CONFIG.CLIENT_ID,
-            discoveryDocs: GOOGLE_API_CONFIG.DISCOVERY_DOCS,
-            scope: GOOGLE_API_CONFIG.SCOPES
-        }).then(() => {
-            isGoogleApiReady = true;
-            // Listen for sign-in state changes.
-            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-        }).catch(error => {
-            console.error("Error initializing Google API client:", error);
-            // Optionally, show a message to the user
-        });
-    }
-
-    function handleAuthClick() {
-        if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-            // User is authorized and wants to sign out.
-            gapi.auth2.getAuthInstance().signOut();
-        } else {
-            // User is not signed in and wants to authorize.
-            gapi.auth2.getAuthInstance().signIn();
-        }
-    }
-
-    function updateSigninStatus(isSignedIn) {
-        const statusEl = document.getElementById('google-auth-status');
-        const buttonEl = document.getElementById('google-auth-btn');
-        if (!statusEl || !buttonEl) return;
-
-        if (isSignedIn) {
-            statusEl.textContent = 'מחובר';
-            buttonEl.textContent = 'התנתק מיומן גוגל';
-            buttonEl.style.borderColor = 'var(--primary-action)';
-            buttonEl.style.color = 'var(--primary-action)';
-        } else {
-            statusEl.textContent = 'לא מחובר';
-            buttonEl.textContent = 'חבר את יומן גוגל';
-            buttonEl.style.borderColor = 'var(--secondary-action)';
-            buttonEl.style.color = 'var(--secondary-action)';
-        }
-    }
-
-    const showGoogleAuthPrompt = () => {
-        const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay';
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>חיבור ליומן גוגל</h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body" style="text-align: center;">
-                    <p>כדי ליצור תזכורת, יש לחבר תחילה את חשבון גוגל שלך.</p>
-                </div>
-                <div class="modal-footer" style="justify-content: center; display: flex; gap: 1rem;">
-                    <button id="connect-google-now-btn" class="header-button">התחבר עכשיו</button>
-                    <button id="cancel-google-auth-btn" class="header-button" style="background-color: var(--transparent-white); color: var(--text-primary);">ביטול</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modalOverlay);
-
-        const closeModal = () => modalOverlay.remove();
-
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay || e.target.closest('.modal-close-btn') || e.target.closest('#cancel-google-auth-btn')) {
-                closeModal();
-            } else if (e.target.closest('#connect-google-now-btn')) {
-                handleAuthClick(); // Trigger Google Sign-In
-                closeModal();
-            }
-        });
-    };
-
-    function createCalendarEvent(summary, dateTime) {
-        if (!isGoogleApiReady) {
-            alert("שירות יומן גוגל עדיין נטען, נסה שוב בעוד מספר רגעים.");
-            return Promise.reject(new Error("Google API not ready."));
-        }
-
-        // Google Calendar API requires the end time to be after the start time.
-        // We'll make the event 10 minutes long by default.
-        const startDate = new Date(dateTime);
-        const endDate = new Date(startDate.getTime() + 10 * 60000);
-
-        const event = {
-            'summary': summary,
-            'description': 'תזכורת מאפליקציית Luna',
-            'start': {
-                'dateTime': startDate.toISOString(),
-                'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone,
-            },
-            'end': {
-                'dateTime': endDate.toISOString(),
-                'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone,
-            },
-            'reminders': {
-                'useDefault': true,
-            },
-        };
-
-        return gapi.client.calendar.events.insert({
-            'calendarId': 'primary',
-            'resource': event,
-        });
-    }
-
     // Initial loading sequence
     appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
     allPeople = await loadData();
     renderAppShell();
-    handleClientLoad(); // Initialize Google API client
 }
