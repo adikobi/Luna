@@ -817,8 +817,44 @@ async function startApp(user, db) {
         }
     };
 
+    // --- Firebase Cloud Messaging Setup ---
+    async function setupFCM() {
+        const messaging = firebase.messaging();
+
+        try {
+            // Request permission to receive notifications
+            await Notification.requestPermission();
+            console.log('Notification permission granted.');
+
+            // Get the user's FCM token
+            const token = await messaging.getToken();
+            console.log('FCM Token:', token);
+
+            // Save the token to Firestore for the current user
+            const userDocRef = db.collection('users').doc(user.uid);
+            await userDocRef.update({
+                fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
+            });
+            console.log('FCM token saved to Firestore.');
+
+        } catch (error) {
+            console.error('Error setting up FCM:', error);
+            if (error.code === 'messaging/permission-blocked') {
+                alert('התראות נחסמו. יש לאפשר אותן בהגדרות הדפדפן כדי לקבל תזכורות.');
+            }
+        }
+
+        // Handle incoming messages when the app is in the foreground
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            showToast(`תזכורת: ${payload.notification.title}`);
+        });
+    }
+
+
     // Initial loading sequence
     appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
     allPeople = await loadData();
     renderAppShell();
+    setupFCM(); // Initialize Firebase Cloud Messaging
 }
