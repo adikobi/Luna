@@ -96,6 +96,17 @@ async function startApp(user, db) {
     const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
+    const linkify = (text) => {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, (url) => {
+            let href = url;
+            if (!href.startsWith('http')) {
+                href = 'https://' + href;
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-green); text-decoration: underline;">${url}</a>`;
+        });
+    };
+
     const showPasscodeModal = () => {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
@@ -304,10 +315,18 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
+            const reminderHTML = moment.reminderDate
+                ? `<div class="moment-reminder">
+                     <i class="fas fa-bell"></i>
+                     <span>${new Date(moment.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                   </div>`
+                : '';
+
             return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
                 <div class="moment-content">
+                    ${reminderHTML}
                     <p class="moment-date">${date}</p>
-                    <p class="moment-text">${moment.text}</p>
+                    <p class="moment-text">${linkify(moment.text)}</p>
                     ${tagsHTML}
                 </div>
                 <div class="moment-controls">
@@ -326,7 +345,7 @@ async function startApp(user, db) {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="reminder-container" style="display: none; margin-top: 1rem;"><label for="moment-reminder-input">תזכורת:</label><input type="datetime-local" id="moment-reminder-input"></div><div class="floating-form-buttons"><button type="button" id="toggle-reminder-btn" class="form-icon-btn" title="הוסף תזכורת"><i class="fas fa-bell"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -347,11 +366,19 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
+            const reminderHTML = result.reminderDate
+                ? `<div class="moment-reminder">
+                     <i class="fas fa-bell"></i>
+                     <span>${new Date(result.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                   </div>`
+                : '';
+
             return `
                 <li class="search-result-item">
                     <div class="moment-content">
+                        ${reminderHTML}
                         <p class="moment-date">${date}</p>
-                        <p class="moment-text">${result.text}</p>
+                        <p class="moment-text">${linkify(result.text)}</p>
                         ${tagsHTML}
                     </div>
                     <div class="result-person-info">
@@ -435,6 +462,43 @@ async function startApp(user, db) {
             }
         });
     };
+
+    const renderUserProfileModal = (currentUser) => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>פרופיל משתמש</h2>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body user-profile-body">
+                    <p><strong>אימייל:</strong> ${currentUser.email}</p>
+                    <button id="password-reset-btn" class="header-button">אפס סיסמה</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalOverlay);
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
+                modalOverlay.remove();
+            }
+
+            if (e.target.closest('#password-reset-btn')) {
+                firebase.auth().sendPasswordResetEmail(currentUser.email)
+                    .then(() => {
+                        showToast('נשלח מייל לאיפוס סיסמה.');
+                        modalOverlay.remove();
+                    })
+                    .catch((error) => {
+                        console.error('Password reset error:', error);
+                        alert(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
+                    });
+            }
+        });
+    };
+
     const openEditMomentModal = (personId, momentIndex) => {
         const person = allPeople.find(p => p.id === personId);
         const moment = person?.moments[momentIndex];
@@ -480,7 +544,7 @@ async function startApp(user, db) {
         // Remove the lock button from the header buttons
         appContainer.innerHTML = `
             <header class="app-header">
-                <h1>Luna</h1>
+                <h1 id="luna-title" style="cursor: pointer;">Luna</h1>
                 <div class="search-container"><input type="search" id="search-bar" placeholder="חיפוש איש קשר..."></div>
                 <div class="header-actions-container">
                     <button id="global-search-btn" class="header-button">חיפוש רגעים</button>
@@ -522,6 +586,7 @@ async function startApp(user, db) {
             }
         });
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+        document.getElementById('luna-title').addEventListener('click', () => renderUserProfileModal(user));
     };
 
     const handleAddPerson = async (event) => {
@@ -655,7 +720,6 @@ async function startApp(user, db) {
 
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
-
         document.getElementById('add-tags-btn').addEventListener('click', openAddTagsModal);
 
         const stagedTagsContainer = document.getElementById('staged-tags-container');
@@ -688,25 +752,44 @@ async function startApp(user, db) {
             }
         });
 
+        const toggleReminderBtn = document.getElementById('toggle-reminder-btn');
+        const reminderContainer = document.getElementById('reminder-container');
+        if (toggleReminderBtn && reminderContainer) {
+            toggleReminderBtn.addEventListener('click', () => {
+                const isHidden = reminderContainer.style.display === 'none';
+                reminderContainer.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    reminderContainer.querySelector('input').focus();
+                }
+            });
+        }
+
         document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const momentText = document.getElementById('moment-text-input').value;
 
-            if (!momentText.trim()) return;
+            if (!momentText.trim()) {
+                alert("הרגע לא יכול להיות ריק.");
+                return;
+            }
 
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
+                const reminderInput = document.getElementById('moment-reminder-input');
+                const reminderDate = reminderInput && reminderInput.value ? new Date(reminderInput.value).toISOString() : null;
+
                 const newMoment = {
                     id: Date.now(),
                     date: new Date().toLocaleDateString('en-CA'),
                     text: momentText,
-                    tags: [...newMomentTags] // Use the tags from the modal's state
+                    tags: [...newMomentTags],
+                    reminderDate: reminderDate
                 };
                 allPeople[personIndex].moments.unshift(newMoment);
                 await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
 
                 showToast("הרגע נשמר בהצלחה!");
-                newMomentTags = []; // Clear the temporary tags state
+                newMomentTags = [];
                 renderPersonDetail(personId);
             }
         });
@@ -734,8 +817,44 @@ async function startApp(user, db) {
         }
     };
 
+    // --- Firebase Cloud Messaging Setup ---
+    async function setupFCM() {
+        const messaging = firebase.messaging();
+
+        try {
+            // Request permission to receive notifications
+            await Notification.requestPermission();
+            console.log('Notification permission granted.');
+
+            // Get the user's FCM token
+            const token = await messaging.getToken();
+            console.log('FCM Token:', token);
+
+            // Save the token to Firestore for the current user
+            const userDocRef = db.collection('users').doc(user.uid);
+            await userDocRef.update({
+                fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
+            });
+            console.log('FCM token saved to Firestore.');
+
+        } catch (error) {
+            console.error('Error setting up FCM:', error);
+            if (error.code === 'messaging/permission-blocked') {
+                alert('התראות נחסמו. יש לאפשר אותן בהגדרות הדפדפן כדי לקבל תזכורות.');
+            }
+        }
+
+        // Handle incoming messages when the app is in the foreground
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            showToast(`תזכורת: ${payload.notification.title}`);
+        });
+    }
+
+
     // Initial loading sequence
     appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
     allPeople = await loadData();
     renderAppShell();
+    setupFCM(); // Initialize Firebase Cloud Messaging
 }
