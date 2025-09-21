@@ -315,16 +315,8 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
-            const reminderHTML = moment.reminderDate
-                ? `<div class="moment-reminder">
-                     <i class="fas fa-bell"></i>
-                     <span>${new Date(moment.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
-                   </div>`
-                : '';
-
             return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
                 <div class="moment-content">
-                    ${reminderHTML}
                     <p class="moment-date">${date}</p>
                     <p class="moment-text">${linkify(moment.text)}</p>
                     ${tagsHTML}
@@ -345,7 +337,7 @@ async function startApp(user, db) {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="reminder-container" style="display: none; margin-top: 1rem;"><label for="moment-reminder-input">תזכורת:</label><input type="datetime-local" id="moment-reminder-input"></div><div class="floating-form-buttons"><button type="button" id="toggle-reminder-btn" class="form-icon-btn" title="הוסף תזכורת"><i class="fas fa-bell"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -366,17 +358,9 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
-            const reminderHTML = result.reminderDate
-                ? `<div class="moment-reminder">
-                     <i class="fas fa-bell"></i>
-                     <span>${new Date(result.reminderDate).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
-                   </div>`
-                : '';
-
             return `
                 <li class="search-result-item">
                     <div class="moment-content">
-                        ${reminderHTML}
                         <p class="moment-date">${date}</p>
                         <p class="moment-text">${linkify(result.text)}</p>
                         ${tagsHTML}
@@ -752,18 +736,6 @@ async function startApp(user, db) {
             }
         });
 
-        const toggleReminderBtn = document.getElementById('toggle-reminder-btn');
-        const reminderContainer = document.getElementById('reminder-container');
-        if (toggleReminderBtn && reminderContainer) {
-            toggleReminderBtn.addEventListener('click', () => {
-                const isHidden = reminderContainer.style.display === 'none';
-                reminderContainer.style.display = isHidden ? 'block' : 'none';
-                if (isHidden) {
-                    reminderContainer.querySelector('input').focus();
-                }
-            });
-        }
-
         document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const momentText = document.getElementById('moment-text-input').value;
@@ -775,15 +747,11 @@ async function startApp(user, db) {
 
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
-                const reminderInput = document.getElementById('moment-reminder-input');
-                const reminderDate = reminderInput && reminderInput.value ? new Date(reminderInput.value).toISOString() : null;
-
                 const newMoment = {
                     id: Date.now(),
                     date: new Date().toLocaleDateString('en-CA'),
                     text: momentText,
                     tags: [...newMomentTags],
-                    reminderDate: reminderDate
                 };
                 allPeople[personIndex].moments.unshift(newMoment);
                 await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
@@ -817,44 +785,8 @@ async function startApp(user, db) {
         }
     };
 
-    // --- Firebase Cloud Messaging Setup ---
-    async function setupFCM() {
-        const messaging = firebase.messaging();
-
-        try {
-            // Request permission to receive notifications
-            await Notification.requestPermission();
-            console.log('Notification permission granted.');
-
-            // Get the user's FCM token
-            const token = await messaging.getToken();
-            console.log('FCM Token:', token);
-
-            // Save the token to Firestore for the current user
-            const userDocRef = db.collection('users').doc(user.uid);
-            await userDocRef.update({
-                fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
-            });
-            console.log('FCM token saved to Firestore.');
-
-        } catch (error) {
-            console.error('Error setting up FCM:', error);
-            if (error.code === 'messaging/permission-blocked') {
-                alert('התראות נחסמו. יש לאפשר אותן בהגדרות הדפדפן כדי לקבל תזכורות.');
-            }
-        }
-
-        // Handle incoming messages when the app is in the foreground
-        messaging.onMessage((payload) => {
-            console.log('Message received. ', payload);
-            showToast(`תזכורת: ${payload.notification.title}`);
-        });
-    }
-
-
     // Initial loading sequence
     appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
     allPeople = await loadData();
     renderAppShell();
-    setupFCM(); // Initialize Firebase Cloud Messaging
 }
