@@ -177,7 +177,7 @@
       margin-bottom: 1.5rem;
   }
   .moment-item { background-color: var(--background-primary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: none; }
-  .moment-content { flex-grow: 1; }
+  .moment-content { flex-grow: 1; min-width: 0; }
   .moment-date { font-size: 0.8rem; color: var(--accent-yellow); margin-bottom: 0.5rem; }
   .moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: break-word; }
   .moment-controls { display: flex; gap: 0.5rem; }
