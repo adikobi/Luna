@@ -296,7 +296,8 @@ async function startApp(user, db) {
         if (!momentsListUL) return;
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const moments = person.moments || [];
+        // Sort moments by date, ascending.
+        const moments = (person.moments || []).slice().sort((a, b) => a.date.localeCompare(b.date));
 
         const filteredMoments = moments
             .map((moment, index) => ({ ...moment, originalIndex: index }))
@@ -337,7 +338,7 @@ async function startApp(user, db) {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div class="floating-form-buttons"><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="date-picker-container" style="display: none; margin-top: 1rem;"><label for="moment-date-input">תאריך הרגע:</label><input type="date" id="moment-date-input"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
@@ -706,6 +707,18 @@ async function startApp(user, db) {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
         document.getElementById('add-tags-btn').addEventListener('click', openAddTagsModal);
 
+        const toggleDateBtn = document.getElementById('toggle-date-btn');
+        const datePickerContainer = document.getElementById('date-picker-container');
+        if (toggleDateBtn && datePickerContainer) {
+            toggleDateBtn.addEventListener('click', () => {
+                const isHidden = datePickerContainer.style.display === 'none';
+                datePickerContainer.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    datePickerContainer.querySelector('input').focus();
+                }
+            });
+        }
+
         const stagedTagsContainer = document.getElementById('staged-tags-container');
         if (stagedTagsContainer) {
             stagedTagsContainer.addEventListener('click', (event) => {
@@ -747,11 +760,14 @@ async function startApp(user, db) {
 
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
+                const dateInput = document.getElementById('moment-date-input');
+                const customDate = dateInput && dateInput.value ? dateInput.value : new Date().toLocaleDateString('en-CA');
+
                 const newMoment = {
                     id: Date.now(),
-                    date: new Date().toLocaleDateString('en-CA'),
+                    date: customDate,
                     text: momentText,
-                    tags: [...newMomentTags],
+                    tags: [...newMomentTags]
                 };
                 allPeople[personIndex].moments.unshift(newMoment);
                 await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
