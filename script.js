@@ -296,8 +296,8 @@ async function startApp(user, db) {
         if (!momentsListUL) return;
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        // Sort moments by date, ascending.
-        const moments = (person.moments || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+        // Sort moments by date, descending (newest first).
+        const moments = (person.moments || []).slice().sort((a, b) => b.date.localeCompare(a.date));
 
         const filteredMoments = moments
             .map((moment, index) => ({ ...moment, originalIndex: index }))
