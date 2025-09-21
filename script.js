@@ -90,6 +90,7 @@ async function startApp(user, db) {
     const appContainer = document.getElementById('app-container');
     let allPeople = [];
     let newMomentTags = []; // Temp state for tags of a new moment
+    let stagedMomentDate = null; // Temp state for a new moment's date
     let isHiddenMode = false; // App state: normal or hidden
     let currentUserData = {}; // Holds all data for the logged-in user
     const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
@@ -337,8 +338,9 @@ async function startApp(user, db) {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="date-picker-container" style="display: none; margin-top: 1rem;"><label for="moment-date-input">תאריך הרגע:</label><input type="date" id="moment-date-input"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><div id="staged-tags-container"></div><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
+        renderStagedDate();
         renderFilteredMoments(person);
         addPersonDetailEventListeners(personId);
     };
@@ -426,6 +428,65 @@ async function startApp(user, db) {
         );
 
         renderSearchResultsView(filteredMoments);
+    };
+
+    const renderStagedDate = () => {
+        const container = document.getElementById('staged-date-container');
+        const button = document.getElementById('toggle-date-btn');
+        if (!container || !button) return;
+
+        if (stagedMomentDate) {
+            // Adjust for timezone offset to display the correct date string
+            const displayDate = new Date(stagedMomentDate + 'T00:00:00').toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            container.innerHTML = `<p class="staged-date-text">תאריך: ${displayDate}</p>`;
+            button.classList.add('active');
+        } else {
+            container.innerHTML = '';
+            button.classList.remove('active');
+        }
+    };
+
+    const openDatePickerModal = () => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+
+        const today = new Date().toLocaleDateString('en-CA');
+
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>בחר תאריך</h2>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body" style="flex-direction: column; align-items: center;">
+                    <input type="date" id="modal-date-input" value="${stagedMomentDate || today}" style="width: 100%; padding: 0.5rem;">
+                </div>
+                <div class="modal-footer">
+                     <button id="confirm-date-btn" class="header-button">אישור</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+
+        const closeModal = () => {
+            modalOverlay.remove();
+        };
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
+                closeModal();
+            }
+        });
+
+        document.getElementById('confirm-date-btn').addEventListener('click', () => {
+            const dateInput = document.getElementById('modal-date-input');
+            if (dateInput.value) {
+                stagedMomentDate = dateInput.value;
+            }
+            renderStagedDate();
+            closeModal();
+        });
     };
 
     const openTagFilterModal = () => {
@@ -705,18 +766,7 @@ async function startApp(user, db) {
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
         document.getElementById('add-tags-btn').addEventListener('click', openAddTagsModal);
-
-        const toggleDateBtn = document.getElementById('toggle-date-btn');
-        const datePickerContainer = document.getElementById('date-picker-container');
-        if (toggleDateBtn && datePickerContainer) {
-            toggleDateBtn.addEventListener('click', () => {
-                const isHidden = datePickerContainer.style.display === 'none';
-                datePickerContainer.style.display = isHidden ? 'block' : 'none';
-                if (isHidden) {
-                    datePickerContainer.querySelector('input').focus();
-                }
-            });
-        }
+        document.getElementById('toggle-date-btn').addEventListener('click', openDatePickerModal);
 
         const stagedTagsContainer = document.getElementById('staged-tags-container');
         if (stagedTagsContainer) {
@@ -759,8 +809,7 @@ async function startApp(user, db) {
 
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
-                const dateInput = document.getElementById('moment-date-input');
-                const customDate = dateInput && dateInput.value ? dateInput.value : new Date().toLocaleDateString('en-CA');
+                const customDate = stagedMomentDate || new Date().toLocaleDateString('en-CA');
 
                 const newMoment = {
                     id: Date.now(),
@@ -773,6 +822,7 @@ async function startApp(user, db) {
 
                 showToast("הרגע נשמר בהצלחה!");
                 newMomentTags = [];
+                stagedMomentDate = null; // Reset staged date
                 renderPersonDetail(personId);
             }
         });
