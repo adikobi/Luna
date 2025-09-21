@@ -300,7 +300,6 @@ async function startApp(user, db) {
         const moments = (person.moments || []).slice().sort((a, b) => b.date.localeCompare(a.date));
 
         const filteredMoments = moments
-            .map((moment, index) => ({ ...moment, originalIndex: index }))
             .filter(moment => moment.text.toLowerCase().includes(lowerCaseSearchTerm));
 
         if (filteredMoments.length === 0) {
@@ -316,7 +315,7 @@ async function startApp(user, db) {
                 ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
                 : '';
 
-            return `<li class="moment-item" data-moment-index="${moment.originalIndex}">
+            return `<li class="moment-item" data-moment-id="${moment.id}">
                 <div class="moment-content">
                     <p class="moment-date">${date}</p>
                     <p class="moment-text">${linkify(moment.text)}</p>
@@ -786,7 +785,13 @@ async function startApp(user, db) {
                 const target = event.target;
                 const momentItem = target.closest('.moment-item');
                 if (!momentItem) return;
-                const momentIndex = parseInt(momentItem.dataset.momentIndex, 10);
+                const momentId = parseInt(momentItem.dataset.momentId, 10);
+                const momentIndex = allPeople[personIndex].moments.findIndex(m => m.id === momentId);
+
+                if (momentIndex === -1) {
+                    console.error("Could not find moment to delete or edit.");
+                    return;
+                }
 
                 if (target.classList.contains('delete-moment-btn')) {
                     if (confirm('האם למחוק את הרגע?')) {
