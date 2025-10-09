@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         auth.createUserWithEmailAndPassword(email, password)
             .catch(error => {
-                alert(`ההרשמה נכשלה: ${error.message}`);
+                showToast(`ההרשמה נכשלה: ${error.message}`);
                 console.error('Registration error:', error);
             })
             .finally(() => {
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         auth.signInWithEmailAndPassword(email, password)
             .catch(error => {
-                alert(`ההתחברות נכשלה: ${error.message}`);
+                showToast(`ההתחברות נכשלה: ${error.message}`);
                 console.error('Login error:', error);
             })
             .finally(() => {
@@ -182,7 +182,7 @@ async function startApp(user, db) {
                 } else {
                     if (code === tempCode) {
                         await saveData('hiddenAreaCode', code);
-                        alert("הקוד נוצר בהצלחה!");
+                        showToast("הקוד נוצר בהצלחה!");
                         modalOverlay.remove();
                     } else {
                         isConfirming = false;
@@ -243,7 +243,7 @@ async function startApp(user, db) {
             currentUserData[key] = value;
         } catch (error) {
             console.error("Error saving data: ", error);
-            alert("שגיאה בשמירת הנתונים לענן.");
+            showToast("שגיאה בשמירת הנתונים לענן.");
         }
     };
 
@@ -264,9 +264,21 @@ async function startApp(user, db) {
             return isHiddenMode ? currentUserData.hiddenPeople : currentUserData.people;
         } catch (error) {
             console.error("Error loading data: ", error);
-            alert("שגיאה בטעינת הנתונים מהענן.");
+            showToast("שגיאה בטעינת הנתונים מהענן.");
             return []; // Return empty array on error
         }
+    };
+
+    const renderPeopleGridSkeleton = () => {
+        const grid = document.getElementById('people-grid');
+        if (!grid) return;
+        const skeletonHTML = Array.from({ length: 6 }).map(() => `
+            <div class="skeleton-person-card">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton skeleton-text"></div>
+            </div>
+        `).join('');
+        grid.innerHTML = skeletonHTML;
     };
 
     const renderPeopleGrid = (peopleToRender) => {
@@ -290,6 +302,18 @@ async function startApp(user, db) {
         main.innerHTML = `<div class="form-container"><h2>הוספת איש קשר חדש</h2><form id="new-person-form"><label for="name">שם:</label><input type="text" id="name" required><label for="image">קישור לתמונה (אופציונלי):</label><input type="url" id="image" placeholder="השאר ריק לאייקון צבעוני"><div class="form-buttons"><button type="submit">שמור</button><button type="button" id="cancel-btn">ביטול</button></div></form></div>`;
         document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
         document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
+    };
+
+    const renderMomentsSkeleton = () => {
+        const momentsListUL = document.querySelector('.moments-list');
+        if (!momentsListUL) return;
+        const skeletonHTML = Array.from({ length: 3 }).map(() => `
+            <li class="skeleton-moment-item">
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text"></div>
+            </li>
+        `).join('');
+        momentsListUL.innerHTML = skeletonHTML;
     };
 
     const renderFilteredMoments = (person, searchTerm = '') => {
@@ -341,7 +365,13 @@ async function startApp(user, db) {
         appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
 
         renderStagedDate();
-        renderFilteredMoments(person);
+        renderMomentsSkeleton();
+
+        // Use a timeout to make the transition smoother and show the skeleton UI
+        setTimeout(() => {
+            renderFilteredMoments(person);
+        }, 250);
+
         addPersonDetailEventListeners(personId);
     };
 
@@ -538,7 +568,7 @@ async function startApp(user, db) {
                     })
                     .catch((error) => {
                         console.error('Password reset error:', error);
-                        alert(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
+                        showToast(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
                     });
             }
         });
@@ -564,7 +594,7 @@ async function startApp(user, db) {
         tagsInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
         document.getElementById('save-changes-btn').addEventListener('click', async () => {
             const newText = document.getElementById('edit-moment-text').value;
-            if (!newText.trim()) return alert("הרגע לא יכול להיות ריק.");
+            if (!newText.trim()) return showToast("הרגע לא יכול להיות ריק.");
             const personIndex = allPeople.findIndex(p => p.id === personId);
             if (personIndex !== -1) {
                 allPeople[personIndex].moments[momentIndex].text = newText;
@@ -582,7 +612,7 @@ async function startApp(user, db) {
         });
     };
 
-    const renderAppShell = () => {
+    const renderAppShell = (isLoading = false) => {
         const lockIconClass = isHiddenMode ? 'fa-lock-open' : 'fa-lock';
         const hiddenButtonTitle = isHiddenMode ? 'צא מאזור נסתר' : 'אזור נסתר';
 
@@ -608,7 +638,11 @@ async function startApp(user, db) {
 
         appContainer.classList.toggle('hidden-mode', isHiddenMode);
 
-        renderPeopleGrid(allPeople);
+        if (isLoading) {
+            renderPeopleGridSkeleton();
+        } else {
+            renderPeopleGrid(allPeople);
+        }
 
         document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
         document.getElementById('search-bar').addEventListener('input', handleSearch);
@@ -656,6 +690,7 @@ async function startApp(user, db) {
             toast.addEventListener('transitionend', () => toast.remove());
         }, 2500); // Start fading out after 2.5 seconds
     };
+
 
     const renderNewMomentTags = () => {
         const displayDiv = document.querySelector('.new-moment-tags-display');
@@ -803,7 +838,7 @@ async function startApp(user, db) {
             const momentText = document.getElementById('moment-text-input').value;
 
             if (!momentText.trim()) {
-                alert("הרגע לא יכול להיות ריק.");
+                showToast("הרגע לא יכול להיות ריק.");
                 return;
             }
 
@@ -857,7 +892,7 @@ async function startApp(user, db) {
     };
 
     // Initial loading sequence
-    appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
+    renderAppShell(true); // Render skeleton UI first
     allPeople = await loadData();
-    renderAppShell();
+    renderAppShell(false); // Render the actual data
 }
