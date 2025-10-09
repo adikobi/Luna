@@ -1,10 +1,10 @@
 /* Final, complete stylesheet */
 :root {
     /* Google-Style Dark Theme Palette */
-    --background-primary: #121212; /* Almost black, for main background */
-    --background-secondary: #1E1E1E; /* Lighter gray, for cards and surfaces */
+    --background-primary: #000000; /* Almost black, for main background */
+    --background-secondary: #1C1C1E; /* Lighter gray, for cards and surfaces */
 
-    --text-primary: #F0F0F0;       /* Soft white for primary text */
+    --text-primary: #FFFFFF;       /* Soft white for primary text */
     --text-secondary: #A0A0A0;     /* Lighter gray for subtitles, placeholders */
 
     /* Pastel Accents */
@@ -160,46 +160,55 @@
   .detail-avatar-icon { width: 80px; height: 80px; }
   .detail-avatar-icon .fas { font-size: 40px; }
   .moments-section { max-width: 700px; margin: 0 auto; }
-  #add-moment-form textarea { width: 100%; min-height: 80px; background-color: var(--background-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; font-family: inherit; font-size: 1rem; color: var(--text-primary); resize: vertical; }
-  #add-moment-form button { width: 100%; padding: 0.75rem; background-color: var(--primary-action); color: var(--text-on-accent); border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-  .moments-list { list-style: none; padding: 0; margin-top: 2rem; }
-  .moments-container-card {
-    background-color: var(--background-secondary);
-    padding: 1.5rem;
-    border-radius: 8px;
+  .month-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
     margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
   }
-  .moments-container-card h2 {
-      text-align: right;
-      border-bottom: none;
-      margin-top: 0;
-      padding-bottom: 0;
-      margin-bottom: 1.5rem;
+  .moments-list {
+      list-style: none;
+      padding: 0;
   }
-  .moment-item { background-color: var(--background-primary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: none; }
-  .moment-content { flex-grow: 1; min-width: 0; }
-  .moment-date { font-size: 0.8rem; color: var(--accent-yellow); margin-bottom: 0.5rem; }
-  .moment-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: break-word; }
-  .moment-controls { display: flex; gap: 0.5rem; }
-  .moment-controls button {
-      background: none;
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      border-radius: 30px;
-      padding: 0.25rem 0.75rem;
+  .journal-moment-card {
+      background-color: var(--background-secondary);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
+      transition: background-color 0.2s;
   }
-  .moment-controls button:hover {
-      background-color: var(--transparent-white);
+  .journal-moment-card:hover {
+      background-color: #2a2a2a;
   }
-  .moment-controls .delete-moment-btn {
-      border-color: var(--primary-action);
-      color: var(--primary-action);
+  .moment-card-content {
+      flex-grow: 1;
   }
-  .moment-controls .delete-moment-btn:hover {
-      background-color: var(--primary-action);
-      color: var(--text-on-accent);
+  .moment-card-text {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+  }
+  .moment-card-date {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: bold;
+  }
+  .moment-card-controls .moment-options-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 0.5rem;
   }
   .moment-edit-textarea { width: 100%; background-color: var(--background-primary); border: 1px solid var(--secondary-action); border-radius: 4px; color: var(--text-primary); font-family: inherit; font-size: 1rem; padding: 0.5rem; }
 
@@ -800,3 +809,99 @@
     background-color: var(--accent-green) !important;
     color: var(--text-on-accent) !important;
 }
+
+/* --- Journal Modal --- */
+.modal-overlay.journal-modal {
+    background-color: #000;
+    align-items: stretch; /* Full height */
+}
+
+.journal-modal .modal-content {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-modal .modal-header {
+    border-bottom: 1px solid #333;
+}
+
+.journal-modal .modal-header h2 {
+    color: #fff;
+}
+
+.journal-modal .modal-close-btn {
+    color: #fff;
+}
+
+.journal-modal .modal-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-modal #add-moment-form-modal {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-modal #moment-text-input {
+    flex-grow: 1;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1.7;
+    resize: none;
+}
+
+.journal-modal .modal-footer {
+    border-top: 1px solid #333;
+}
+
+.journal-modal #save-moment-btn {
+    background-color: var(--primary-action);
+    color: var(--text-on-accent);
+}
+.journal-modal #save-moment-btn:hover {
+    background-color: var(--tertiary-action);
+}
+
+.view-moment-header {
+    text-align: center;
+    flex-grow: 1;
+}
+.view-moment-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.moment-view-content {
+    color: #fff;
+    font-size: 1.2rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+.moment-view-content .moment-tags {
+    margin-top: 2rem;
+}
+.moment-full-text a {
+    color: var(--accent-green) !important;
+}
+.header-button.danger {
+    border-color: var(--primary-action);
+    color: var(--primary-action);
+}
+.header-button.danger:hover {
+    background-color: var(--primary-action);
+    color: var(--text-on-accent);
+}
+>>>>>>> REPLACE
