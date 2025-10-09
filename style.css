@@ -751,7 +751,7 @@
       font-weight: 400; /* Normal weight */
       text-align: center; /* Center the number in the circle */
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.1s ease;
       display: flex; /* Use flexbox for centering */
       justify-content: center;
       align-items: center;
@@ -759,6 +759,11 @@
 
   .keypad-btn:hover {
       background-color: var(--transparent-white);
+  }
+
+  .keypad-btn.active {
+      transform: scale(0.9);
+      background-color: var(--secondary-action);
   }
 
   .passcode-modal-content .modal-body {
@@ -774,6 +779,17 @@
     20%, 80% { transform: translateX(2px); }
     30%, 50%, 70% { transform: translateX(-4px); }
     40%, 60% { transform: translateX(4px); }
+  }
+
+  @keyframes unlock {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.1);
+    }
   }
 
   /* --- Hidden Mode Visuals --- */

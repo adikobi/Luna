@@ -112,31 +112,30 @@ async function startApp(user, db) {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
 
+        const buildPasscodeModalHTML = (title) => {
+            const keypadButtons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'נקה', 0, '<i class="fas fa-backspace"></i>']
+                .map(key => `<button class="keypad-btn" data-key="${key}">${key}</button>`).join('');
+
+            return `
+                <div class="modal-content passcode-modal-content">
+                    <div class="modal-header">
+                        <h2 id="passcode-title">${title}</h2>
+                        <button class="modal-close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="passcode-prompt" class="passcode-prompt"></p>
+                        <div class="passcode-display">
+                            ${Array.from({ length: 4 }).map(() => '<div class="passcode-digit"></div>').join('')}
+                        </div>
+                        <div class="passcode-keypad">${keypadButtons}</div>
+                    </div>
+                </div>
+            `;
+        };
+
         const hasCode = currentUserData.hiddenAreaCode !== null;
         const title = hasCode ? "הזן קוד כניסה" : "צור קוד חדש";
-
-        modalOverlay.innerHTML = `
-            <div class="modal-content passcode-modal-content">
-                <div class="modal-header">
-                    <h2 id="passcode-title">${title}</h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p id="passcode-prompt" class="passcode-prompt"></p>
-                    <div class="passcode-display">
-                        <div class="passcode-digit"></div>
-                        <div class="passcode-digit"></div>
-                        <div class="passcode-digit"></div>
-                        <div class="passcode-digit"></div>
-                    </div>
-                    <div class="passcode-keypad">
-                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 'נקה', 0, '<i class="fas fa-backspace"></i>'].map(key =>
-                            `<button class="keypad-btn" data-key="${key}">${key}</button>`
-                        ).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
+        modalOverlay.innerHTML = buildPasscodeModalHTML(title);
         document.body.appendChild(modalOverlay);
 
         const promptEl = modalOverlay.querySelector('#passcode-prompt');
@@ -158,67 +157,83 @@ async function startApp(user, db) {
             updateDisplay();
         };
 
+        const validatePasscode = (code) => {
+            if (code === currentUserData.hiddenAreaCode) {
+                modalOverlay.style.animation = 'unlock 0.3s ease-out forwards';
+                setTimeout(() => {
+                    modalOverlay.remove();
+                    enterHiddenMode();
+                }, 300);
+            } else {
+                promptEl.textContent = "קוד שגוי, נסה שוב.";
+                modalOverlay.querySelector('.passcode-display').classList.add('shake');
+                setTimeout(() => {
+                    modalOverlay.querySelector('.passcode-display').classList.remove('shake');
+                    resetInput();
+                }, 500);
+            }
+        };
+
+        const createPasscode = async (code) => {
+            if (!isConfirming) {
+                tempCode = code;
+                isConfirming = true;
+                resetInput("הזן את הקוד שוב לאישור.");
+            } else {
+                if (code === tempCode) {
+                    await saveData('hiddenAreaCode', code);
+                    showToast("הקוד נוצר בהצלחה!");
+                    modalOverlay.remove();
+                } else {
+                    isConfirming = false;
+                    tempCode = null;
+                    promptEl.textContent = "הקודים לא תואמים. נסה שוב.";
+                    setTimeout(() => resetInput("צור קוד חדש."), 1500);
+                }
+            }
+        };
+
         const handleCodeEntered = async () => {
             const code = enteredCode.join('');
             const hasCode = currentUserData.hiddenAreaCode !== null;
+            if (hasCode) {
+                validatePasscode(code);
+            } else {
+                await createPasscode(code);
+            }
+        };
 
-            if (hasCode) { // We are in "Enter" mode
-                if (code === currentUserData.hiddenAreaCode) {
-                    modalOverlay.remove();
-                    enterHiddenMode();
-                } else {
-                    promptEl.textContent = "קוד שגוי, נסה שוב.";
-                    modalOverlay.querySelector('.passcode-display').classList.add('shake');
-                    setTimeout(() => {
-                        modalOverlay.querySelector('.passcode-display').classList.remove('shake');
-                        resetInput();
-                    }, 500);
+        const handlePasscodeKeypad = (e) => {
+            const keyBtn = e.target.closest('.keypad-btn');
+            if (!keyBtn) return;
+
+            // Add visual press effect
+            keyBtn.classList.add('active');
+            setTimeout(() => keyBtn.classList.remove('active'), 100);
+
+            const key = keyBtn.dataset.key;
+            if (key === 'נקה') {
+                resetInput();
+            } else if (key.includes('backspace')) {
+                if (enteredCode.length > 0) {
+                    enteredCode.pop();
+                    updateDisplay();
                 }
-            } else { // We are in "Create" mode
-                if (!isConfirming) {
-                    tempCode = code;
-                    isConfirming = true;
-                    resetInput("הזן את הקוד שוב לאישור.");
-                } else {
-                    if (code === tempCode) {
-                        await saveData('hiddenAreaCode', code);
-                        showToast("הקוד נוצר בהצלחה!");
-                        modalOverlay.remove();
-                    } else {
-                        isConfirming = false;
-                        tempCode = null;
-                        promptEl.textContent = "הקודים לא תואמים. נסה שוב.";
-                        setTimeout(() => resetInput("צור קוד חדש."), 1500);
-                    }
+            } else if (enteredCode.length < 4) {
+                enteredCode.push(key);
+                updateDisplay();
+                if (enteredCode.length === 4) {
+                    handleCodeEntered();
                 }
             }
         };
 
         modalOverlay.addEventListener('click', (e) => {
-            const target = e.target;
-            if (target === modalOverlay || target.closest('.modal-close-btn')) {
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
                 modalOverlay.remove();
                 return;
             }
-
-            const keyBtn = target.closest('.keypad-btn');
-            if (keyBtn) {
-                const key = keyBtn.dataset.key;
-                if (key === 'נקה') {
-                    resetInput();
-                } else if (key.includes('backspace')) {
-                    if (enteredCode.length > 0) {
-                        enteredCode.pop();
-                        updateDisplay();
-                    }
-                } else if (enteredCode.length < 4) {
-                    enteredCode.push(key);
-                    updateDisplay();
-                    if (enteredCode.length === 4) {
-                        handleCodeEntered();
-                    }
-                }
-            }
+            handlePasscodeKeypad(e);
         });
     };
 
