@@ -734,7 +734,7 @@
   .passcode-keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      gap: 1.5rem; /* Increased gap for better spacing */
       direction: ltr; /* Force LTR layout for the keypad */
   }
 
@@ -742,9 +742,9 @@
       background-color: var(--background-primary);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      border-radius: 50%; /* Make it a circle */
-      width: 60px; /* Explicit width */
-      height: 60px; /* Explicit height */
+      border-radius: 16px; /* From circle to rounded square */
+      width: 70px; /* Adjusted width */
+      height: 70px; /* Adjusted height */
       padding: 0; /* Remove padding to center content */
       font-family: 'Heebo', sans-serif; /* Use standard font */
       font-size: 1.2rem; /* Adjusted font size */
