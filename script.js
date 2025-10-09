@@ -714,7 +714,7 @@ async function startApp(user, db) {
                 </div>
             </header>
             <main id="app-main">
-                <div id="people-grid-container" class="people-grid"></div>
+                <div id="people-grid" class="people-grid"></div>
             </main>
             <div class="fab-container">
                 <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
@@ -724,7 +724,7 @@ async function startApp(user, db) {
 
         appContainer.classList.toggle('hidden-mode', isHiddenMode);
 
-        const peopleGrid = document.getElementById('people-grid-container');
+        const peopleGrid = document.getElementById('people-grid');
         renderSkeletonGrid(peopleGrid, 8);
 
 
