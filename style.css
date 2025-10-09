@@ -810,6 +810,42 @@
     color: var(--text-on-accent) !important;
 }
 
+/* --- Skeleton Loading --- */
+@keyframes skeleton-pulse {
+    0% {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    50% {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    100% {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+.skeleton {
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    background-color: var(--background-secondary); /* Base color */
+}
+
+.skeleton-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 1rem auto;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-text {
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 1rem auto 0;
+    width: 80%;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
 /* --- Journal Modal --- */
 .modal-overlay.journal-modal {
     background-color: #000;

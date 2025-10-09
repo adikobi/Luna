@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="splash-screen">
+        <div class="logo-container">
+            <i class="fas fa-moon moon-icon"></i>
+            <div class="stars">
+                <i class="fas fa-star star-1"></i>
+                <i class="fas fa-heart heart-star"></i>
+                <i class="fas fa-star star-2"></i>
+            </div>
+        </div>
+        <h1 class="splash-title">Luna</h1>
+        <p class="splash-subtitle">זיכרונות ורגעים</p>
+    </div>
+
+    <div id="auth-container" style="display: none;">
+        <div class="logo-container">
+            <i class="fas fa-moon moon-icon"></i>
+            <div class="stars">
+                <i class="fas fa-star star-1"></i>
+                <i class="fas fa-heart heart-star"></i>
+                <i class="fas fa-star star-2"></i>
+            </div>
+        </div>
+        <h1 class="splash-title">Luna</h1>
+        <p class="splash-subtitle">זיכרונות ורגעים</p>
+
+        <div id="auth-forms-container">
+            <div id="login-form-container">
+                <h2>התחברות</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="אימייל" required>
+                    <input type="password" id="login-password" placeholder="סיסמה" required>
+                    <button type="submit">התחבר</button>
+                </form>
+                <p>אין לך חשבון? <a href="#" id="show-register">הירשם כאן</a></p>
+            </div>
+
+            <div id="register-form-container" style="display: none;">
+                <h2>הרשמה</h2>
+                <form id="register-form">
+                    <input type="email" id="register-email" placeholder="אימייל" required>
+                    <input type="password" id="register-password" placeholder="סיסמה" required>
+                    <button type="submit">הירשם</button>
+                </form>
+                <p>יש לך כבר חשבון? <a href="#" id="show-login">התחבר כאן</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <!-- The rest of the app will be built here by script.js -->
+    </div>
+
+    <template id="skeleton-person-card-template">
+        <div class="person-card skeleton">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-text"></div>
+        </div>
+    </template>
+
+    <template id="skeleton-moment-card-template">
+        <li class="journal-moment-card skeleton">
+            <div class="moment-card-content">
+                <div class="skeleton-text" style="width: 80%; height: 1.2rem; margin-bottom: 1rem;"></div>
+                <div class="skeleton-text" style="width: 50%; height: 1rem;"></div>
+            </div>
+        </li>
+    </template>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+          apiKey: "AIzaSyDnXuOUGPrN4WMDkwK--cKy4zewj390Rkc",
+          authDomain: "luna-bb5ab.firebaseapp.com",
+          projectId: "luna-bb5ab",
+          storageBucket: "luna-bb5ab.appspot.com",
+          messagingSenderId: "621008201851",
+          appId: "1:621008201851:web:e96d8675e117fe7d06dade"
+        };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script src="test-script.js"></script>
+</body>
+</html>

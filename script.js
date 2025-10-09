@@ -93,7 +93,6 @@ async function startApp(user, db) {
     let stagedMomentDate = null; // Temp state for a new moment's date
     let isHiddenMode = false; // App state: normal or hidden
     let currentUserData = {}; // Holds all data for the logged-in user
-    const themeColors = ['#ED64A6', '#F6E05E', '#48BB78', '#63B3ED'];
     const avatarColor = '#E5BEB5';
     const userDocRef = db.collection('users').doc(user.uid);
 
@@ -182,7 +181,7 @@ async function startApp(user, db) {
                 } else {
                     if (code === tempCode) {
                         await saveData('hiddenAreaCode', code);
-                        alert("הקוד נוצר בהצלחה!");
+                        showToast("הקוד נוצר בהצלחה!");
                         modalOverlay.remove();
                     } else {
                         isConfirming = false;
@@ -204,6 +203,8 @@ async function startApp(user, db) {
             const keyBtn = target.closest('.keypad-btn');
             if (keyBtn) {
                 const key = keyBtn.dataset.key;
+                keyBtn.classList.add('active');
+                setTimeout(() => keyBtn.classList.remove('active'), 100);
                 if (key === 'נקה') {
                     resetInput();
                 } else if (key.includes('backspace')) {
@@ -215,7 +216,7 @@ async function startApp(user, db) {
                     enteredCode.push(key);
                     updateDisplay();
                     if (enteredCode.length === 4) {
-                        handleCodeEntered();
+                        setTimeout(handleCodeEntered, 100);
                     }
                 }
             }
@@ -224,16 +225,12 @@ async function startApp(user, db) {
 
     const enterHiddenMode = async () => {
         isHiddenMode = true;
-        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...טוען</p></main>`;
-        allPeople = await loadData();
-        renderAppShell();
+        await renderAppShell();
     };
 
     const exitHiddenMode = async () => {
         isHiddenMode = false;
-        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...יוצא</p></main>`;
-        allPeople = await loadData();
-        renderAppShell();
+        await renderAppShell();
     };
 
     const saveData = async (key, value) => {
@@ -243,7 +240,7 @@ async function startApp(user, db) {
             currentUserData[key] = value;
         } catch (error) {
             console.error("Error saving data: ", error);
-            alert("שגיאה בשמירת הנתונים לענן.");
+            showToast("שגיאה בשמירת הנתונים לענן.");
         }
     };
 
@@ -264,32 +261,203 @@ async function startApp(user, db) {
             return isHiddenMode ? currentUserData.hiddenPeople : currentUserData.people;
         } catch (error) {
             console.error("Error loading data: ", error);
-            alert("שגיאה בטעינת הנתונים מהענן.");
+            showToast("שגיאה בטעינת הנתונים מהענן.");
             return []; // Return empty array on error
         }
+    };
+
+    const renderSkeletonGrid = (container, count) => {
+        const template = document.getElementById('skeleton-person-card-template');
+        if (!container || !template) return;
+        let skeletons = '';
+        for (let i = 0; i < count; i++) {
+            skeletons += template.innerHTML;
+        }
+        container.innerHTML = skeletons;
+    };
+
+    const renderSkeletonMoments = (container, count) => {
+        const template = document.getElementById('skeleton-moment-card-template');
+        if (!container || !template) return;
+        let skeletons = '';
+        for (let i = 0; i < count; i++) {
+            skeletons += template.innerHTML;
+        }
+        container.innerHTML = skeletons;
     };
 
     const renderPeopleGrid = (peopleToRender) => {
         const grid = document.getElementById('people-grid');
         if (!grid) return;
+
+        const pinnedPeople = peopleToRender.filter(p => p.pinned);
+        const unpinnedPeople = peopleToRender.filter(p => !p.pinned);
+
+        let gridHTML = '';
+
+        if (pinnedPeople.length > 0) {
+            gridHTML += '<h2 class="grid-section-header">נעוצים</h2>';
+            gridHTML += '<div class="people-grid-section">';
+            gridHTML += pinnedPeople.map(person => renderPersonCard(person)).join('');
+            gridHTML += '</div>';
+        }
+
+        if (unpinnedPeople.length > 0) {
+            if (pinnedPeople.length > 0) {
+                 gridHTML += '<h2 class="grid-section-header" style="margin-top: 2rem;">אנשי קשר</h2>';
+            }
+            gridHTML += '<div class="people-grid-section">';
+            gridHTML += unpinnedPeople.map(person => renderPersonCard(person)).join('');
+            gridHTML += '</div>';
+        }
+
         if (peopleToRender.length === 0) {
             grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
         } else {
-            grid.innerHTML = peopleToRender.map((person, index) => {
-                const color = avatarColor;
-                const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
-                return `<div class="person-card" data-person-id="${person.id}">${avatarHTML}<h3>${person.name}</h3></div>`;
-            }).join('');
-            document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
+            grid.innerHTML = gridHTML;
+            document.querySelectorAll('.person-card').forEach(card => {
+                card.addEventListener('click', handleCardClick);
+                card.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const personId = parseInt(e.currentTarget.dataset.personId, 10);
+                    showPersonContextMenu(e.clientX, e.clientY, personId);
+                });
+            });
         }
     };
 
-    const renderNewPersonForm = () => {
+    const renderPersonCard = (person) => {
+        const color = avatarColor;
+        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
+        const pinnedIcon = person.pinned ? `<i class="fas fa-thumbtack pinned-icon"></i>` : '';
+        return `
+            <div class="person-card" data-person-id="${person.id}">
+                ${pinnedIcon}
+                ${avatarHTML}
+                <h3>${person.name}</h3>
+            </div>`;
+    };
+
+    const showPersonContextMenu = (x, y, personId) => {
+        closeContextMenu(); // Close any existing menu
+
+        const person = allPeople.find(p => p.id === personId);
+        if (!person) return;
+
+        const menu = document.createElement('div');
+        menu.id = 'person-context-menu';
+        menu.style.top = `${y}px`;
+        menu.style.left = `${x}px`;
+
+        const pinActionText = person.pinned ? 'הסר נעירה' : 'נעץ בראש';
+
+        menu.innerHTML = `
+            <ul>
+                <li data-action="pin">${pinActionText}</li>
+                <li data-action="edit">ערוך</li>
+                <li data-action="delete" class="danger">מחק</li>
+            </ul>
+        `;
+
+        document.body.appendChild(menu);
+
+        menu.addEventListener('click', async (e) => {
+            const action = e.target.dataset.action;
+            if (!action) return;
+
+            switch (action) {
+                case 'pin':
+                    await togglePinPerson(personId);
+                    break;
+                case 'edit':
+                    renderEditPersonForm(personId);
+                    break;
+                case 'delete':
+                    if (confirm(`האם למחוק את ${person.name} וכל הרגעים שלו?`)) {
+                        allPeople = allPeople.filter(p => p.id !== personId);
+                        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+                        await renderAppShell();
+                    }
+                    break;
+            }
+            closeContextMenu();
+        });
+
+        // Close menu when clicking elsewhere
+        setTimeout(() => {
+            document.addEventListener('click', closeContextMenu, { once: true });
+        }, 0);
+    };
+
+    const togglePinPerson = async (personId) => {
+        const personIndex = allPeople.findIndex(p => p.id === personId);
+        if (personIndex !== -1) {
+            allPeople[personIndex].pinned = !allPeople[personIndex].pinned;
+            allPeople.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+            await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+            renderPeopleGrid(allPeople);
+        }
+    };
+
+    const closeContextMenu = () => {
+        const menu = document.getElementById('person-context-menu');
+        if (menu) {
+            menu.remove();
+        }
+        document.removeEventListener('click', closeContextMenu);
+    };
+
+    const renderNewPersonForm = (personToEdit = null) => {
+        const isEditing = personToEdit !== null;
+        const title = isEditing ? 'עריכת איש קשר' : 'הוספת איש קשר חדש';
+        const nameValue = isEditing ? `value="${personToEdit.name}"` : '';
+        const imageValue = isEditing && personToEdit.image ? `value="${personToEdit.image}"` : '';
+
         const main = document.getElementById('app-main');
         if (!main) return;
-        main.innerHTML = `<div class="form-container"><h2>הוספת איש קשר חדש</h2><form id="new-person-form"><label for="name">שם:</label><input type="text" id="name" required><label for="image">קישור לתמונה (אופציונלי):</label><input type="url" id="image" placeholder="השאר ריק לאייקון צבעוני"><div class="form-buttons"><button type="submit">שמור</button><button type="button" id="cancel-btn">ביטול</button></div></form></div>`;
-        document.getElementById('new-person-form').addEventListener('submit', handleAddPerson);
+        main.innerHTML = `
+            <div class="form-container">
+                <h2>${title}</h2>
+                <form id="person-form">
+                    <label for="name">שם:</label>
+                    <input type="text" id="name" required ${nameValue}>
+                    <label for="image">קישור לתמונה (אופציונלי):</label>
+                    <input type="url" id="image" placeholder="השאר ריק לאייקון ברירת מחדל" ${imageValue}>
+                    <div class="form-buttons">
+                        <button type="submit">שמור</button>
+                        <button type="button" id="cancel-btn">ביטול</button>
+                    </div>
+                </form>
+            </div>`;
+
+        document.getElementById('person-form').addEventListener('submit', (e) => handleAddOrEditPerson(e, personToEdit ? personToEdit.id : null));
         document.getElementById('cancel-btn').addEventListener('click', renderAppShell);
+    };
+
+    const renderEditPersonForm = (personId) => {
+        const person = allPeople.find(p => p.id === personId);
+        if (person) {
+            renderNewPersonForm(person);
+        }
+    };
+
+    const handleAddOrEditPerson = async (event, personId) => {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const image = document.getElementById('image').value;
+
+        if (personId) { // Editing existing person
+            const personIndex = allPeople.findIndex(p => p.id === personId);
+            if (personIndex !== -1) {
+                allPeople[personIndex].name = name;
+                allPeople[personIndex].image = image;
+            }
+        } else { // Adding new person
+            allPeople.push({ id: Date.now(), name, image, moments: [], pinned: false });
+        }
+
+        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+        await renderAppShell();
     };
 
     const renderFilteredMoments = (person, searchTerm = '') => {
@@ -297,11 +465,12 @@ async function startApp(user, db) {
         if (!momentsListUL) return;
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        // Sort moments by date, descending (newest first).
-        const moments = (person.moments || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+        const moments = (person.moments || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        const filteredMoments = moments
-            .filter(moment => moment.text.toLowerCase().includes(lowerCaseSearchTerm));
+        const filteredMoments = moments.filter(moment =>
+            moment.text.toLowerCase().includes(lowerCaseSearchTerm) ||
+            (moment.tags || []).some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm))
+        );
 
         if (filteredMoments.length === 0) {
             const message = searchTerm ? 'לא נמצאו רגעים תואמים לחיפוש.' : 'אין עדיין רגעים.';
@@ -309,87 +478,65 @@ async function startApp(user, db) {
             return;
         }
 
-        const momentsHTML = filteredMoments.map(moment => {
-            const date = new Date(moment.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        let momentsHTML = '';
+        let currentMonthYear = '';
 
-            const tagsHTML = (moment.tags && moment.tags.length > 0)
-                ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
-                : '';
+        const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+        const dateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'short' });
 
-            return `<li class="moment-item" data-moment-id="${moment.id}">
-                <div class="moment-content">
-                    <p class="moment-date">${date}</p>
-                    <p class="moment-text">${linkify(moment.text)}</p>
-                    ${tagsHTML}
-                </div>
-                <div class="moment-controls">
-                    <button class="edit-moment-btn">ערוך</button>
-                    <button class="delete-moment-btn">&times;</button>
-                </div>
-            </li>`
-        }).join('');
+        filteredMoments.forEach(moment => {
+            const momentDate = new Date(moment.date + 'T00:00:00');
+            const monthYear = monthFormatter.format(momentDate);
+
+            if (monthYear !== currentMonthYear) {
+                currentMonthYear = monthYear;
+                momentsHTML += `<h2 class="month-header">${currentMonthYear}</h2>`;
+            }
+
+            const dayAndMonth = dateFormatter.format(momentDate);
+            const fullDateString = `${dayAndMonth}, ${momentDate.getFullYear()}`;
+
+            const truncatedText = moment.text.length > 150 ? moment.text.substring(0, 150) + '...' : moment.text;
+
+            momentsHTML += `
+                <li class="journal-moment-card" data-moment-id="${moment.id}">
+                    <div class="moment-card-content">
+                        <p class="moment-card-text">${linkify(truncatedText)}</p>
+                        <p class="moment-card-date">${fullDateString}</p>
+                    </div>
+                    <div class="moment-card-controls">
+                        <button class="moment-options-btn">&hellip;</button>
+                    </div>
+                </li>
+            `;
+        });
 
         momentsListUL.innerHTML = momentsHTML;
     };
 
-    const renderPersonDetail = (personId) => {
+    const renderPersonDetail = async (personId) => {
         const person = allPeople.find(p => p.id === personId);
-        if (!person) { renderAppShell(); return; }
+        if (!person) { await renderAppShell(); return; }
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><button id="delete-person-btn" class="delete-person-button">מחק איש קשר</button></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>הוסף רגע חדש</h2><form id="add-moment-form"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button><button type="submit" class="form-icon-btn" title="שמור רגע"><i class="fas fa-check"></i></button></div></form><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main>`;
+        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><div></div></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main><div class="fab-container"><button id="show-add-moment-modal" class="fab" title="הוסף רגע חדש">+</button></div>`;
 
-        renderStagedDate();
-        renderFilteredMoments(person);
+        const momentsListUL = appContainer.querySelector('.moments-list');
+        renderSkeletonMoments(momentsListUL, 5);
+
+        setTimeout(() => {
+            renderFilteredMoments(person);
+        }, 50);
+
         addPersonDetailEventListeners(personId);
     };
 
-    const renderResultsList = (results) => {
-        const listUL = document.querySelector('.search-results-list');
-        if (!listUL) return;
-
-        if (results.length === 0) {
-            listUL.innerHTML = '<p class="no-results">לא נמצאו רגעים תואמים.</p>';
-            return;
-        }
-
-        listUL.innerHTML = results.map(result => {
-            const date = new Date(result.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const tagsHTML = (result.tags && result.tags.length > 0)
-                ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>`
-                : '';
-
-            return `
-                <li class="search-result-item">
-                    <div class="moment-content">
-                        <p class="moment-date">${date}</p>
-                        <p class="moment-text">${linkify(result.text)}</p>
-                        ${tagsHTML}
-                    </div>
-                    <div class="result-person-info">
-                        <p>מתוך: <a href="#" class="person-link" data-person-id="${result.personId}">${result.personName}</a></p>
-                    </div>
-                </li>
-            `;
-        }).join('');
-    };
-
     const renderSearchResultsView = (initialResults) => {
-        const headerHTML = `<header class="app-header search-results-header">
-                                <button id="back-to-shell" class="back-button">&larr; חזרה</button>
-                                <h1>תוצאות</h1>
-                                <div class="search-container">
-                                    <input type="search" id="results-filter-bar" placeholder="סנן תוצאות...">
-                                </div>
-                            </header>`;
-
+        const headerHTML = `<header class="app-header search-results-header"><button id="back-to-shell" class="back-button">&larr; חזרה</button><h1>תוצאות</h1><div class="search-container"><input type="search" id="results-filter-bar" placeholder="סנן תוצאות..."></div></header>`;
         appContainer.innerHTML = `${headerHTML}<main id="app-main"><ul class="search-results-list"></ul></main>`;
-
         renderResultsList(initialResults);
-
         document.getElementById('back-to-shell').addEventListener('click', renderAppShell);
-
         document.getElementById('results-filter-bar').addEventListener('input', (event) => {
             const searchTerm = event.target.value.toLowerCase();
             const filteredResults = initialResults.filter(result =>
@@ -398,36 +545,27 @@ async function startApp(user, db) {
             );
             renderResultsList(filteredResults);
         });
-
-        const mainContent = document.getElementById('app-main');
-        if (mainContent) {
-            mainContent.addEventListener('click', (event) => {
-                const target = event.target.closest('.person-link');
-                if (target) {
-                    event.preventDefault();
-                    const personId = parseInt(target.dataset.personId, 10);
-                    renderPersonDetail(personId);
-                }
-            });
-        }
+        document.getElementById('app-main').addEventListener('click', (event) => {
+            const target = event.target.closest('.person-link');
+            if (target) {
+                event.preventDefault();
+                renderPersonDetail(parseInt(target.dataset.personId, 10));
+            }
+        });
     };
 
-    const handleGlobalMomentSearch = (event) => {
-        const searchTerm = event.target.value.toLowerCase();
-
-        const allMoments = allPeople.flatMap(person =>
-            (person.moments || []).map(moment => ({
-                ...moment,
-                personId: person.id,
-                personName: person.name
-            }))
-        );
-
-        const filteredMoments = allMoments.filter(moment =>
-            moment.text.toLowerCase().includes(searchTerm)
-        );
-
-        renderSearchResultsView(filteredMoments);
+    const renderResultsList = (results) => {
+        const listUL = document.querySelector('.search-results-list');
+        if (!listUL) return;
+        if (results.length === 0) {
+            listUL.innerHTML = '<p class="no-results">לא נמצאו רגעים תואמים.</p>';
+            return;
+        }
+        listUL.innerHTML = results.map(result => {
+            const date = new Date(result.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const tagsHTML = (result.tags && result.tags.length > 0) ? `<div class="moment-tags">${result.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>` : '';
+            return `<li class="search-result-item"><div class="moment-content"><p class="moment-date">${date}</p><p class="moment-text">${linkify(result.text)}</p>${tagsHTML}</div><div class="result-person-info"><p>מתוך: <a href="#" class="person-link" data-person-id="${result.personId}">${result.personName}</a></p></div></li>`;
+        }).join('');
     };
 
     const renderStagedDate = () => {
@@ -436,7 +574,6 @@ async function startApp(user, db) {
         if (!container || !button) return;
 
         if (stagedMomentDate) {
-            // Adjust for timezone offset to display the correct date string
             const displayDate = new Date(stagedMomentDate + 'T00:00:00').toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
             container.innerHTML = `<p class="staged-date-text">תאריך: ${displayDate}</p>`;
             button.classList.add('active');
@@ -449,41 +586,14 @@ async function startApp(user, db) {
     const openDatePickerModal = () => {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
-
         const today = new Date().toLocaleDateString('en-CA');
-
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>בחר תאריך</h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body" style="flex-direction: column; align-items: center;">
-                    <input type="date" id="modal-date-input" value="${stagedMomentDate || today}" style="width: 100%; padding: 0.5rem;">
-                </div>
-                <div class="modal-footer">
-                     <button id="confirm-date-btn" class="header-button">אישור</button>
-                </div>
-            </div>
-        `;
-
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>בחר תאריך</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body" style="flex-direction: column; align-items: center;"><input type="date" id="modal-date-input" value="${stagedMomentDate || today}" style="width: 100%; padding: 0.5rem;"></div><div class="modal-footer"><button id="confirm-date-btn" class="header-button">אישור</button></div></div>`;
         document.body.appendChild(modalOverlay);
-
-        const closeModal = () => {
-            modalOverlay.remove();
-        };
-
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
-                closeModal();
-            }
-        });
-
+        const closeModal = () => modalOverlay.remove();
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) closeModal(); });
         document.getElementById('confirm-date-btn').addEventListener('click', () => {
             const dateInput = document.getElementById('modal-date-input');
-            if (dateInput.value) {
-                stagedMomentDate = dateInput.value;
-            }
+            if (dateInput.value) stagedMomentDate = dateInput.value;
             renderStagedDate();
             closeModal();
         });
@@ -511,82 +621,88 @@ async function startApp(user, db) {
     const renderUserProfileModal = (currentUser) => {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>פרופיל משתמש</h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body user-profile-body">
-                    <p><strong>אימייל:</strong> ${currentUser.email}</p>
-                    <button id="password-reset-btn" class="header-button">אפס סיסמה</button>
-                </div>
-            </div>
-        `;
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>פרופיל משתמש</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body user-profile-body"><p><strong>אימייל:</strong> ${currentUser.email}</p><button id="password-reset-btn" class="header-button">אפס סיסמה</button></div></div>`;
         document.body.appendChild(modalOverlay);
-
         modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) {
-                modalOverlay.remove();
-            }
-
+            if (e.target === modalOverlay || e.target.closest('.modal-close-btn')) modalOverlay.remove();
             if (e.target.closest('#password-reset-btn')) {
                 firebase.auth().sendPasswordResetEmail(currentUser.email)
-                    .then(() => {
-                        showToast('נשלח מייל לאיפוס סיסמה.');
-                        modalOverlay.remove();
-                    })
-                    .catch((error) => {
-                        console.error('Password reset error:', error);
-                        alert(`שגיאה בשליחת מייל לאיפוס סיסמה: ${error.message}`);
-                    });
+                    .then(() => { showToast('נשלח מייל לאיפוס סיסמה.'); modalOverlay.remove(); })
+                    .catch((error) => { console.error('Password reset error:', error); showToast(`שגיאה: ${error.message}`); });
             }
         });
     };
 
-    const openEditMomentModal = (personId, momentIndex) => {
-        const person = allPeople.find(p => p.id === personId);
-        const moment = person?.moments[momentIndex];
+    const openEditMomentModal = (personId, momentId) => {
+        const personIndex = allPeople.findIndex(p => p.id === personId);
+        const momentIndex = allPeople[personIndex].moments.findIndex(m => m.id === momentId);
+        const moment = allPeople[personIndex]?.moments[momentIndex];
         if (!moment) return;
+
         newMomentTags = [...(moment.tags || [])];
+        stagedMomentDate = moment.date;
+
         const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay';
-        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>עריכת רגע</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><textarea id="edit-moment-text" class="moment-edit-textarea">${moment.text}</textarea><h4 style="margin-top: 1rem;">תגיות</h4><div class="add-tag-input-container"><input type="text" id="edit-tags-input" placeholder="הקלד תגית..."><button type="button" id="edit-add-tag-btn" class="header-button">הוסף</button></div><div class="new-moment-tags-display"></div></div><div class="modal-footer"><button id="save-changes-btn" class="header-button">שמור שינויים</button></div></div>`;
-        document.body.appendChild(modalOverlay);
-        renderNewMomentTags();
-        const tagsInput = document.getElementById('edit-tags-input');
-        const addTag = () => {
-            const newTag = tagsInput.value.trim().replace(/#/g, '');
-            if (newTag && !newMomentTags.includes(newTag)) { newMomentTags.push(newTag); renderNewMomentTags(); }
-            tagsInput.value = ''; tagsInput.focus();
-        };
-        document.getElementById('edit-add-tag-btn').addEventListener('click', addTag);
-        tagsInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
-        document.getElementById('save-changes-btn').addEventListener('click', async () => {
-            const newText = document.getElementById('edit-moment-text').value;
-            if (!newText.trim()) return alert("הרגע לא יכול להיות ריק.");
-            const personIndex = allPeople.findIndex(p => p.id === personId);
-            if (personIndex !== -1) {
-                allPeople[personIndex].moments[momentIndex].text = newText;
-                allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
+        modalOverlay.className = 'modal-overlay journal-modal';
+
+        const closeModal = () => { modalOverlay.remove(); newMomentTags = []; stagedMomentDate = null; };
+
+        const handleDelete = async () => {
+            if (confirm('האם למחוק את הרגע?')) {
+                allPeople[personIndex].moments.splice(momentIndex, 1);
                 await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                modalOverlay.remove();
-                newMomentTags = [];
+                closeModal();
                 renderPersonDetail(personId);
-                showToast("השינויים נשמרו!");
+                showToast("הרגע נמחק.");
             }
-        });
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) { modalOverlay.remove(); newMomentTags = []; }
-            if (e.target.classList.contains('delete-tag-btn')) { newMomentTags.splice(parseInt(e.target.parentElement.dataset.index, 10), 1); renderNewMomentTags(); }
-        });
+        };
+
+        const handleSave = async () => {
+            const newText = modalOverlay.querySelector('#moment-text-input').value;
+            if (!newText.trim()) { showToast("הרגע לא יכול להיות ריק."); return; }
+            allPeople[personIndex].moments[momentIndex].text = newText;
+            allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
+            allPeople[personIndex].moments[momentIndex].date = stagedMomentDate;
+            await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+            closeModal();
+            renderPersonDetail(personId);
+            showToast("השינויים נשמרו!");
+        };
+
+        const renderEdit = () => {
+            modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>עריכת רגע</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" required>${moment.text}</textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button></div></form></div><div class="modal-footer"><button id="save-changes-btn" class="header-button">שמור שינויים</button></div></div>`;
+            modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+            modalOverlay.querySelector('#toggle-date-btn').addEventListener('click', openDatePickerModal);
+            modalOverlay.querySelector('#add-tags-btn').addEventListener('click', openAddTagsModal);
+            modalOverlay.querySelector('#save-changes-btn').addEventListener('click', handleSave);
+            modalOverlay.querySelector('#staged-tags-container').addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-tag-btn')) {
+                    const index = parseInt(event.target.parentElement.dataset.index, 10);
+                    newMomentTags.splice(index, 1);
+                    renderStagedTags();
+                }
+            });
+            renderStagedDate();
+            renderStagedTags();
+        };
+
+        const renderView = () => {
+            const headerDate = new Date(stagedMomentDate + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const tagsHTML = (moment.tags && moment.tags.length > 0) ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>` : '';
+            modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><div class="view-moment-header"><p>${headerDate}</p></div><button class="modal-close-btn">&times;</button></div><div class="modal-body"><div class="moment-view-content"><p class="moment-full-text">${linkify(moment.text)}</p>${tagsHTML}</div></div><div class="modal-footer" style="justify-content: space-between; display: flex;"><button id="delete-moment-btn" class="header-button danger">מחק</button><button id="edit-moment-btn" class="header-button">ערוך</button></div></div>`;
+            modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+            modalOverlay.querySelector('#edit-moment-btn').addEventListener('click', renderEdit);
+            modalOverlay.querySelector('#delete-moment-btn').addEventListener('click', handleDelete);
+        };
+
+        document.body.appendChild(modalOverlay);
+        renderView();
     };
 
-    const renderAppShell = () => {
+    const renderAppShell = async () => {
         const lockIconClass = isHiddenMode ? 'fa-lock-open' : 'fa-lock';
         const hiddenButtonTitle = isHiddenMode ? 'צא מאזור נסתר' : 'אזור נסתר';
 
-        // Remove the lock button from the header buttons
         appContainer.innerHTML = `
             <header class="app-header">
                 <h1 id="luna-title" style="cursor: pointer;">Luna</h1>
@@ -598,7 +714,7 @@ async function startApp(user, db) {
                 </div>
             </header>
             <main id="app-main">
-                <div id="people-grid" class="people-grid"></div>
+                <div id="people-grid-container" class="people-grid"></div>
             </main>
             <div class="fab-container">
                 <button id="add-person-btn" class="fab" title="הוסף איש קשר חדש">+</button>
@@ -608,256 +724,153 @@ async function startApp(user, db) {
 
         appContainer.classList.toggle('hidden-mode', isHiddenMode);
 
-        renderPeopleGrid(allPeople);
+        const peopleGrid = document.getElementById('people-grid-container');
+        renderSkeletonGrid(peopleGrid, 8);
 
-        document.getElementById('add-person-btn').addEventListener('click', renderNewPersonForm);
+
+        document.getElementById('add-person-btn').addEventListener('click', () => renderNewPersonForm());
         document.getElementById('search-bar').addEventListener('input', handleSearch);
         document.getElementById('global-search-btn').addEventListener('click', () => {
-            const allMoments = allPeople.flatMap(person =>
-                (person.moments || []).map(moment => ({
-                    ...moment,
-                    personId: person.id,
-                    personName: person.name
-                }))
-            );
-            renderSearchResultsView(allMoments); // Pass all moments to the view
+            const allMoments = allPeople.flatMap(person => (person.moments || []).map(moment => ({ ...moment, personId: person.id, personName: person.name })));
+            renderSearchResultsView(allMoments);
         });
         document.getElementById('tag-filter-btn').addEventListener('click', openTagFilterModal);
         document.getElementById('hidden-area-btn').addEventListener('click', () => {
-            if (isHiddenMode) {
-                exitHiddenMode();
-            } else {
-                showPasscodeModal();
-            }
+            if (isHiddenMode) exitHiddenMode();
+            else showPasscodeModal();
         });
         document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
         document.getElementById('luna-title').addEventListener('click', () => renderUserProfileModal(user));
+
+        allPeople = await loadData();
+        renderPeopleGrid(allPeople);
     };
 
-    const handleAddPerson = async (event) => {
-        event.preventDefault();
-        const name = document.getElementById('name').value;
-        const image = document.getElementById('image').value;
-        allPeople.push({ id: Date.now(), name, image, moments: [] });
-        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-        renderAppShell();
-    };
     const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
-    const handleCardClick = (event) => { renderPersonDetail(parseInt(event.currentTarget.dataset.personId, 10)); };
+    const handleCardClick = (event) => {
+        const personId = parseInt(event.currentTarget.dataset.personId, 10);
+        if (event.target.closest('.pinned-icon')) { // Don't navigate if clicking the pin icon
+             return;
+        }
+        renderPersonDetail(personId);
+    };
 
     const showToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'toast-notification';
         toast.textContent = message;
         document.body.appendChild(toast);
-
         setTimeout(() => {
             toast.classList.add('fade-out');
             toast.addEventListener('transitionend', () => toast.remove());
-        }, 2500); // Start fading out after 2.5 seconds
-    };
-
-    const renderNewMomentTags = () => {
-        const displayDiv = document.querySelector('.new-moment-tags-display');
-        if (!displayDiv) return;
-        displayDiv.innerHTML = newMomentTags.map((tag, index) => `
-            <span class="new-moment-tag" data-index="${index}">
-                #${tag}
-                <button class="delete-tag-btn">&times;</button>
-            </span>
-        `).join('');
+        }, 2500);
     };
 
     const renderStagedTags = () => {
         const container = document.getElementById('staged-tags-container');
         if (!container) return;
-
-        if (newMomentTags.length === 0) {
-            container.innerHTML = '';
-            return;
-        }
-
-        const tagsHTML = newMomentTags.map((tag, index) => `
-            <span class="new-moment-tag" data-index="${index}">
-                #${tag}
-                <button class="delete-tag-btn">&times;</button>
-            </span>
-        `).join('');
-
+        if (newMomentTags.length === 0) { container.innerHTML = ''; return; }
+        const tagsHTML = newMomentTags.map((tag, index) => `<span class="new-moment-tag" data-index="${index}">#${tag}<button class="delete-tag-btn">&times;</button></span>`).join('');
         container.innerHTML = `<div class="moment-tags" style="padding: 1rem; justify-content: flex-start;">${tagsHTML}</div>`;
     };
 
     const openAddTagsModal = () => {
-        // Create the modal overlay
         const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay'; // Use the standard class for styling
-
-        // Set the inner HTML for the modal
-        modalOverlay.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>הוסף תגיות</h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="add-tag-input-container">
-                        <input type="text" id="new-tags-input" placeholder="הקלד תגית...">
-                        <button type="button" class="add-tag-btn header-button">הוסף</button>
-                    </div>
-                    <div class="new-moment-tags-display"></div>
-                </div>
-                <div class="modal-footer">
-                     <button class="save-tags-btn header-button">סיום</button>
-                </div>
-            </div>
-        `;
-
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>הוסף תגיות</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><div class="add-tag-input-container"><input type="text" id="new-tags-input" placeholder="הקלד תגית..."><button type="button" class="add-tag-btn header-button">הוסף</button></div><div class="new-moment-tags-display"></div></div><div class="modal-footer"><button class="save-tags-btn header-button">סיום</button></div></div>`;
         document.body.appendChild(modalOverlay);
-        renderNewMomentTags(); // Initial render of any existing tags
-
-        // Get references to elements inside the modal
+        renderNewMomentTags();
         const tagsInput = modalOverlay.querySelector('#new-tags-input');
-
-        // --- Modal Logic ---
-        const closeModal = () => {
-            modalOverlay.remove();
-            renderStagedTags(); // Update the main form with the selected tags
-        };
-
+        const closeModal = () => { modalOverlay.remove(); renderStagedTags(); };
         const addTag = () => {
             if (!tagsInput) return;
             const newTag = tagsInput.value.trim().replace(/#/g, '');
             if (newTag && !newMomentTags.includes(newTag)) {
                 newMomentTags.push(newTag);
-                renderNewMomentTags(); // Re-render the tags list inside the modal
+                renderNewMomentTags();
             }
             tagsInput.value = '';
             tagsInput.focus();
         };
-
-        // --- Event Listeners using event delegation from the overlay ---
         modalOverlay.addEventListener('click', (event) => {
-            // Close modal by clicking outside the content, on a close button, or on the save button
-            if (event.target === modalOverlay || event.target.closest('.modal-close-btn') || event.target.closest('.save-tags-btn')) {
-                closeModal();
-            }
-            // Add a new tag
-            if (event.target.closest('.add-tag-btn')) {
-                addTag();
-            }
-            // Delete a tag
+            if (event.target === modalOverlay || event.target.closest('.modal-close-btn') || event.target.closest('.save-tags-btn')) closeModal();
+            if (event.target.closest('.add-tag-btn')) addTag();
             if (event.target.classList.contains('delete-tag-btn')) {
                 const index = parseInt(event.target.parentElement.dataset.index, 10);
                 newMomentTags.splice(index, 1);
                 renderNewMomentTags();
             }
         });
-
         if (tagsInput) {
-            tagsInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    addTag();
-                }
-            });
+            tagsInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); addTag(); } });
         }
+    };
+
+    const renderNewMomentTags = () => {
+        const displayDiv = document.querySelector('.new-moment-tags-display');
+        if (!displayDiv) return;
+        displayDiv.innerHTML = newMomentTags.map((tag, index) => `<span class="new-moment-tag" data-index="${index}">#${tag}<button class="delete-tag-btn">&times;</button></span>`).join('');
+    };
+
+    const openAddMomentModal = (personId) => {
+        newMomentTags = [];
+        stagedMomentDate = null;
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay journal-modal';
+        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>רגע חדש</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button></div></form></div><div class="modal-footer"><button id="save-moment-btn" class="header-button">שמור רגע</button></div></div>`;
+        document.body.appendChild(modalOverlay);
+        const closeModal = () => modalOverlay.remove();
+        modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+        modalOverlay.querySelector('#toggle-date-btn').addEventListener('click', openDatePickerModal);
+        modalOverlay.querySelector('#add-tags-btn').addEventListener('click', openAddTagsModal);
+        modalOverlay.querySelector('#save-moment-btn').addEventListener('click', async () => {
+            const momentText = modalOverlay.querySelector('#moment-text-input').value;
+            if (!momentText.trim()) { showToast("הרגע לא יכול להיות ריק."); return; }
+            const personIndex = allPeople.findIndex(p => p.id === personId);
+            if (personIndex !== -1) {
+                const customDate = stagedMomentDate || new Date().toLocaleDateString('en-CA');
+                const newMoment = { id: Date.now(), date: customDate, text: momentText, tags: [...newMomentTags] };
+                if (!allPeople[personIndex].moments) allPeople[personIndex].moments = [];
+                allPeople[personIndex].moments.unshift(newMoment);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+                showToast("הרגע נשמר בהצלחה!");
+                closeModal();
+                renderPersonDetail(personId);
+            }
+        });
+        modalOverlay.querySelector('#staged-tags-container').addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-tag-btn')) {
+                const index = parseInt(event.target.parentElement.dataset.index, 10);
+                newMomentTags.splice(index, 1);
+                renderStagedTags();
+            }
+        });
+        renderStagedDate();
+        renderStagedTags();
     };
 
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
-        document.getElementById('add-tags-btn').addEventListener('click', openAddTagsModal);
-        document.getElementById('toggle-date-btn').addEventListener('click', openDatePickerModal);
-
-        const stagedTagsContainer = document.getElementById('staged-tags-container');
-        if (stagedTagsContainer) {
-            stagedTagsContainer.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-tag-btn')) {
-                    const index = parseInt(event.target.parentElement.dataset.index, 10);
-                    newMomentTags.splice(index, 1);
-                    renderStagedTags();
-                }
-            });
-        }
-
+        document.getElementById('show-add-moment-modal').addEventListener('click', () => openAddMomentModal(personId));
         const momentSearchInput = document.getElementById('moment-search-bar');
         if (momentSearchInput) {
             momentSearchInput.addEventListener('input', (event) => {
                 const searchTerm = event.target.value;
                 const person = allPeople.find(p => p.id === personId);
-                if (person) {
-                    renderFilteredMoments(person, searchTerm);
-                }
+                if (person) renderFilteredMoments(person, searchTerm);
             });
         }
-
-        document.getElementById('delete-person-btn').addEventListener('click', async () => {
-            if (confirm('האם למחוק את איש הקשר וכל הרגעים שלו?')) {
-                allPeople = allPeople.filter(p => p.id !== personId);
-                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                renderAppShell();
-            }
-        });
-
-        document.getElementById('add-moment-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const momentText = document.getElementById('moment-text-input').value;
-
-            if (!momentText.trim()) {
-                alert("הרגע לא יכול להיות ריק.");
-                return;
-            }
-
-            const personIndex = allPeople.findIndex(p => p.id === personId);
-            if (personIndex !== -1) {
-                const customDate = stagedMomentDate || new Date().toLocaleDateString('en-CA');
-
-                const newMoment = {
-                    id: Date.now(),
-                    date: customDate,
-                    text: momentText,
-                    tags: [...newMomentTags]
-                };
-                allPeople[personIndex].moments.unshift(newMoment);
-                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-
-                showToast("הרגע נשמר בהצלחה!");
-                newMomentTags = [];
-                stagedMomentDate = null; // Reset staged date
-                renderPersonDetail(personId);
-            }
-        });
-
         const momentsList = document.querySelector('.moments-list');
         if (momentsList) {
             momentsList.addEventListener('click', async (event) => {
-                const personIndex = allPeople.findIndex(p => p.id === personId);
-                if (personIndex === -1) return;
-                const target = event.target;
-                const momentItem = target.closest('.moment-item');
-                if (!momentItem) return;
-                const momentId = parseInt(momentItem.dataset.momentId, 10);
-                const momentIndex = allPeople[personIndex].moments.findIndex(m => m.id === momentId);
-
-                if (momentIndex === -1) {
-                    console.error("Could not find moment to delete or edit.");
-                    return;
-                }
-
-                if (target.classList.contains('delete-moment-btn')) {
-                    if (confirm('האם למחוק את הרגע?')) {
-                        allPeople[personIndex].moments.splice(momentIndex, 1);
-                        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                        renderPersonDetail(personId);
-                    }
-                } else if (target.classList.contains('edit-moment-btn')) {
-                    openEditMomentModal(personId, momentIndex);
-                }
+                const momentCard = event.target.closest('.journal-moment-card');
+                if (!momentCard) return;
+                const momentId = parseInt(momentCard.dataset.momentId, 10);
+                openEditMomentModal(personId, momentId);
             });
         }
     };
 
     // Initial loading sequence
-    appContainer.innerHTML = `<header class="app-header"><h1>Luna</h1></header><main id="app-main"><p class="loading-text">טוען נתונים...</p></main>`;
-    allPeople = await loadData();
-    renderAppShell();
+    await renderAppShell();
 }
