@@ -108,12 +108,71 @@
   }
 
   /* --- Person Card --- */
-  .person-card { background-color: var(--background-secondary); border-radius: 8px; padding: 1rem; text-align: center; transition: transform 0.2s; cursor: pointer; animation: fadeIn 0.5s; }
+  .person-card {
+      position: relative; /* For pin button positioning */
+      background-color: var(--background-secondary);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      animation: fadeIn 0.5s;
+      border: 1px solid transparent; /* Placeholder for pinned border */
+  }
   .person-card:hover { transform: translateY(-5px); }
   .person-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 1rem; }
   .person-card h3 { font-size: 1.1rem; font-weight: 700; word-wrap: break-word; color: var(--text-primary); }
   .default-avatar { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto; background-color: var(--primary-action); }
   .default-avatar .fas { font-size: 50px; color: var(--text-on-accent); opacity: 0.8; }
+
+  .pin-btn {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem; /* RTL friendly */
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 5;
+      padding: 0.5rem;
+      line-height: 1;
+      transition: color 0.2s, transform 0.2s;
+  }
+
+  .pin-btn:hover {
+      color: var(--accent-yellow);
+      transform: scale(1.2);
+  }
+
+  .person-card.pinned .pin-btn i { /* Target the icon inside the button */
+      color: var(--accent-yellow);
+  }
+
+  .person-card.pinned {
+      border-color: var(--accent-yellow);
+      box-shadow: 0 0 10px rgba(249, 226, 175, 0.2);
+  }
+
+  .pinned-section {
+      margin-bottom: 2rem;
+  }
+
+  .grid-header {
+      font-size: 1.5rem;
+      color: var(--accent-green);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      text-align: right;
+  }
+
+  .others-header {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      border-bottom: none;
+  }
 
   /* --- Form --- */
   .form-container { max-width: 500px; margin: 0 auto; background-color: var(--background-secondary); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }

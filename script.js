@@ -239,16 +239,16 @@ async function startApp(user, db) {
 
     const enterHiddenMode = async () => {
         isHiddenMode = true;
-        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...טוען</p></main>`;
+        renderAppShell(true); // Show skeleton UI first
         allPeople = await loadData();
-        renderAppShell();
+        renderAppShell(false); // Render the actual data
     };
 
     const exitHiddenMode = async () => {
         isHiddenMode = false;
-        appContainer.innerHTML = `<main id="app-main"><p class="loading-text">...יוצא</p></main>`;
+        renderAppShell(true); // Show skeleton UI first
         allPeople = await loadData();
-        renderAppShell();
+        renderAppShell(false); // Render the actual data
     };
 
     const saveData = async (key, value) => {
@@ -297,18 +297,65 @@ async function startApp(user, db) {
     };
 
     const renderPeopleGrid = (peopleToRender) => {
-        const grid = document.getElementById('people-grid');
-        if (!grid) return;
-        if (peopleToRender.length === 0) {
-            grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
-        } else {
-            grid.innerHTML = peopleToRender.map((person, index) => {
+        const mainContent = document.getElementById('app-main');
+        if (!mainContent) return;
+
+        const pinnedPeople = peopleToRender.filter(p => p.pinned);
+        const unpinnedPeople = peopleToRender.filter(p => !p.pinned);
+
+        const createGridHTML = (people) => {
+            return people.map(person => {
                 const color = avatarColor;
                 const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
-                return `<div class="person-card" data-person-id="${person.id}">${avatarHTML}<h3>${person.name}</h3></div>`;
+                const pinnedClass = person.pinned ? 'pinned' : '';
+                const pinIconClass = person.pinned ? 'fas fa-thumbtack' : 'far fa-thumbtack';
+                return `
+                    <div class="person-card ${pinnedClass}" data-person-id="${person.id}">
+                        <button class="pin-btn" data-person-id="${person.id}"><i class="${pinIconClass}"></i></button>
+                        ${avatarHTML}
+                        <h3>${person.name}</h3>
+                    </div>`;
             }).join('');
-            document.querySelectorAll('.person-card').forEach(card => card.addEventListener('click', handleCardClick));
+        };
+
+        let finalHTML = '';
+        if (pinnedPeople.length > 0) {
+            finalHTML += `
+                <div class="pinned-section">
+                    <h2 class="grid-header">נעוצים</h2>
+                    <div class="people-grid">${createGridHTML(pinnedPeople)}</div>
+                </div>
+            `;
         }
+
+        if (unpinnedPeople.length > 0) {
+            if(pinnedPeople.length > 0) { // Add a header for the "other" contacts only if there's a pinned section
+                 finalHTML += `<h2 class="grid-header others-header">אחרים</h2>`;
+            }
+            finalHTML += `<div class="people-grid">${createGridHTML(unpinnedPeople)}</div>`;
+        }
+
+        if (peopleToRender.length === 0) {
+            finalHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
+        }
+
+        mainContent.innerHTML = finalHTML;
+
+        // Re-attach all event listeners
+        document.querySelectorAll('.person-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.pin-btn')) {
+                    handleCardClick(e);
+                }
+            });
+        });
+
+        document.querySelectorAll('.pin-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const personId = parseInt(e.currentTarget.dataset.personId, 10);
+                handlePinPerson(personId);
+            });
+        });
     };
 
     const renderNewPersonForm = () => {
@@ -687,10 +734,20 @@ async function startApp(user, db) {
         event.preventDefault();
         const name = document.getElementById('name').value;
         const image = document.getElementById('image').value;
-        allPeople.push({ id: Date.now(), name, image, moments: [] });
+        allPeople.push({ id: Date.now(), name, image, moments: [], pinned: false }); // Add pinned property
         await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
         renderAppShell();
     };
+
+    const handlePinPerson = async (personId) => {
+        const personIndex = allPeople.findIndex(p => p.id === personId);
+        if (personIndex > -1) {
+            allPeople[personIndex].pinned = !allPeople[personIndex].pinned;
+            await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+            renderAppShell();
+        }
+    };
+
     const handleSearch = (event) => { const searchTerm = event.target.value.toLowerCase(); renderPeopleGrid(allPeople.filter(p => p.name.toLowerCase().includes(searchTerm))); };
     const handleCardClick = (event) => { renderPersonDetail(parseInt(event.currentTarget.dataset.personId, 10)); };
 
