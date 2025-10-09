@@ -780,3 +780,23 @@
     border-color: var(--tertiary-action);
 }
 
+/* --- Staged Date Display --- */
+#staged-date-container {
+    padding: 0.5rem 0;
+    text-align: center;
+}
+.staged-date-text {
+    background-color: var(--background-primary);
+    color: var(--accent-green);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: bold;
+    border: 1px solid var(--accent-green);
+}
+
+/* --- Active Icon Button --- */
+.floating-form-buttons button.form-icon-btn.active {
+    background-color: var(--accent-green) !important;
+    color: var(--text-on-accent) !important;
+}
