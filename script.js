@@ -481,8 +481,8 @@ async function startApp(user, db) {
         let momentsHTML = '';
         let currentMonthYear = '';
 
-        const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
-        const dateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'short' });
+        const monthFormatter = new Intl.DateTimeFormat('he-IL', { month: 'long', year: 'numeric' });
+        const dateFormatter = new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long' });
 
         filteredMoments.forEach(moment => {
             const momentDate = new Date(moment.date + 'T00:00:00');
@@ -494,7 +494,8 @@ async function startApp(user, db) {
             }
 
             const dayAndMonth = dateFormatter.format(momentDate);
-            const fullDateString = `${dayAndMonth}, ${momentDate.getFullYear()}`;
+            const weekDay = new Intl.DateTimeFormat('he-IL', { weekday: 'long' }).format(momentDate);
+            const fullDateString = `${weekDay}, ${dayAndMonth}`;
 
             const truncatedText = moment.text.length > 150 ? moment.text.substring(0, 150) + '...' : moment.text;
 
@@ -503,9 +504,6 @@ async function startApp(user, db) {
                     <div class="moment-card-content">
                         <p class="moment-card-text">${linkify(truncatedText)}</p>
                         <p class="moment-card-date">${fullDateString}</p>
-                    </div>
-                    <div class="moment-card-controls">
-                        <button class="moment-options-btn">&hellip;</button>
                     </div>
                 </li>
             `;
@@ -568,19 +566,28 @@ async function startApp(user, db) {
         }).join('');
     };
 
-    const renderStagedDate = () => {
-        const container = document.getElementById('staged-date-container');
-        const button = document.getElementById('toggle-date-btn');
-        if (!container || !button) return;
+    const renderMomentMeta = () => {
+        const container = document.getElementById('moment-meta-bar');
+        if (!container) return;
 
-        if (stagedMomentDate) {
-            const displayDate = new Date(stagedMomentDate + 'T00:00:00').toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            container.innerHTML = `<p class="staged-date-text">תאריך: ${displayDate}</p>`;
-            button.classList.add('active');
-        } else {
-            container.innerHTML = '';
-            button.classList.remove('active');
-        }
+        const date = stagedMomentDate ? new Date(stagedMomentDate + 'T00:00:00') : new Date();
+        const displayDate = date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const tagsText = newMomentTags.length > 0 ? `#${newMomentTags.join(' #')}` : 'הוסף תגיות';
+
+        container.innerHTML = `
+            <div class="meta-item" id="toggle-date-btn">
+                <i class="fas fa-calendar-alt"></i>
+                <span>${displayDate}</span>
+            </div>
+            <div class="meta-item" id="add-tags-btn">
+                <i class="fas fa-hashtag"></i>
+                <span class="tags-display">${tagsText}</span>
+            </div>
+        `;
+
+        container.querySelector('#toggle-date-btn').addEventListener('click', openDatePickerModal);
+        container.querySelector('#add-tags-btn').addEventListener('click', openAddTagsModal);
     };
 
     const openDatePickerModal = () => {
@@ -594,7 +601,7 @@ async function startApp(user, db) {
         document.getElementById('confirm-date-btn').addEventListener('click', () => {
             const dateInput = document.getElementById('modal-date-input');
             if (dateInput.value) stagedMomentDate = dateInput.value;
-            renderStagedDate();
+            renderMomentMeta();
             closeModal();
         });
     };
@@ -643,7 +650,7 @@ async function startApp(user, db) {
         stagedMomentDate = moment.date;
 
         const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay journal-modal';
+        modalOverlay.className = 'journal-modal-overlay'; // Use a unique class to avoid conflicts
 
         const closeModal = () => { modalOverlay.remove(); newMomentTags = []; stagedMomentDate = null; };
 
@@ -662,41 +669,104 @@ async function startApp(user, db) {
             if (!newText.trim()) { showToast("הרגע לא יכול להיות ריק."); return; }
             allPeople[personIndex].moments[momentIndex].text = newText;
             allPeople[personIndex].moments[momentIndex].tags = [...newMomentTags];
-            allPeople[personIndex].moments[momentIndex].date = stagedMomentDate;
+            allPeople[personIndex].moments[momentIndex].date = stagedMomentDate || new Date().toLocaleDateString('en-CA');
             await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
             closeModal();
             renderPersonDetail(personId);
             showToast("השינויים נשמרו!");
         };
 
-        const renderEdit = () => {
-            modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>עריכת רגע</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" required>${moment.text}</textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button></div></form></div><div class="modal-footer"><button id="save-changes-btn" class="header-button">שמור שינויים</button></div></div>`;
-            modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
-            modalOverlay.querySelector('#toggle-date-btn').addEventListener('click', openDatePickerModal);
-            modalOverlay.querySelector('#add-tags-btn').addEventListener('click', openAddTagsModal);
-            modalOverlay.querySelector('#save-changes-btn').addEventListener('click', handleSave);
-            modalOverlay.querySelector('#staged-tags-container').addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-tag-btn')) {
-                    const index = parseInt(event.target.parentElement.dataset.index, 10);
-                    newMomentTags.splice(index, 1);
-                    renderStagedTags();
-                }
-            });
-            renderStagedDate();
-            renderStagedTags();
-        };
-
-        const renderView = () => {
-            const headerDate = new Date(stagedMomentDate + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const tagsHTML = (moment.tags && moment.tags.length > 0) ? `<div class="moment-tags">${moment.tags.map(tag => `<span class="moment-tag">#${tag}</span>`).join('')}</div>` : '';
-            modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><div class="view-moment-header"><p>${headerDate}</p></div><button class="modal-close-btn">&times;</button></div><div class="modal-body"><div class="moment-view-content"><p class="moment-full-text">${linkify(moment.text)}</p>${tagsHTML}</div></div><div class="modal-footer" style="justify-content: space-between; display: flex;"><button id="delete-moment-btn" class="header-button danger">מחק</button><button id="edit-moment-btn" class="header-button">ערוך</button></div></div>`;
-            modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
-            modalOverlay.querySelector('#edit-moment-btn').addEventListener('click', renderEdit);
-            modalOverlay.querySelector('#delete-moment-btn').addEventListener('click', handleDelete);
-        };
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="header-side left"><button class="modal-close-btn">&times;</button></div>
+                    <h2 class="modal-title-center">עריכת רגע</h2>
+                    <div class="header-side right">
+                        <button id="delete-moment-btn" class="header-button danger-icon"><i class="fas fa-trash-alt"></i></button>
+                        <button id="save-changes-btn" class="header-button save-icon"><i class="fas fa-check"></i></button>
+                    </div>
+                </div>
+                <div id="moment-meta-bar" class="moment-meta-bar"></div>
+                <div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" required>${moment.text}</textarea></form></div>
+            </div>`;
 
         document.body.appendChild(modalOverlay);
-        renderView();
+        modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+        modalOverlay.querySelector('#delete-moment-btn').addEventListener('click', handleDelete);
+        modalOverlay.querySelector('#save-changes-btn').addEventListener('click', handleSave);
+
+        renderMomentMeta();
+    };
+
+    const openAddMomentModal = (personId) => {
+        newMomentTags = [];
+        stagedMomentDate = null;
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'journal-modal-overlay'; // Use a unique class to avoid conflicts
+
+        const closeModal = () => modalOverlay.remove();
+
+        modalOverlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="header-side left"><button class="modal-close-btn">&times;</button></div>
+                    <h2 class="modal-title-center">רגע חדש</h2>
+                    <div class="header-side right">
+                        <button id="save-moment-btn" class="header-button save-icon"><i class="fas fa-check"></i></button>
+                    </div>
+                </div>
+                <div id="moment-meta-bar" class="moment-meta-bar"></div>
+                <div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea></form></div>
+            </div>`;
+
+        document.body.appendChild(modalOverlay);
+        modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+
+        modalOverlay.querySelector('#save-moment-btn').addEventListener('click', async () => {
+            const momentText = modalOverlay.querySelector('#moment-text-input').value;
+            if (!momentText.trim()) { showToast("הרגע לא יכול להיות ריק."); return; }
+            const personIndex = allPeople.findIndex(p => p.id === personId);
+            if (personIndex !== -1) {
+                const customDate = stagedMomentDate || new Date().toLocaleDateString('en-CA');
+                const newMoment = { id: Date.now(), date: customDate, text: momentText, tags: [...newMomentTags] };
+                if (!allPeople[personIndex].moments) allPeople[personIndex].moments = [];
+                allPeople[personIndex].moments.unshift(newMoment);
+                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
+                showToast("הרגע נשמר בהצלחה!");
+                closeModal();
+                renderPersonDetail(personId);
+            }
+        });
+
+        renderMomentMeta();
+    };
+
+    const renderNewMomentTags = () => {
+        const displayDiv = document.querySelector('.new-moment-tags-display');
+        if (!displayDiv) return;
+        displayDiv.innerHTML = newMomentTags.map((tag, index) => `<span class="new-moment-tag" data-index="${index}">#${tag}<button class="delete-tag-btn">&times;</button></span>`).join('');
+    };
+
+    const addPersonDetailEventListeners = (personId) => {
+        document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
+        document.getElementById('show-add-moment-modal').addEventListener('click', () => openAddMomentModal(personId));
+        const momentSearchInput = document.getElementById('moment-search-bar');
+        if (momentSearchInput) {
+            momentSearchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value;
+                const person = allPeople.find(p => p.id === personId);
+                if (person) renderFilteredMoments(person, searchTerm);
+            });
+        }
+        const momentsList = document.querySelector('.moments-list');
+        if (momentsList) {
+            momentsList.addEventListener('click', async (event) => {
+                const momentCard = event.target.closest('.journal-moment-card');
+                if (!momentCard) return;
+                const momentId = parseInt(momentCard.dataset.momentId, 10);
+                openEditMomentModal(personId, momentId);
+            });
+        }
     };
 
     const renderAppShell = async () => {
@@ -766,14 +836,6 @@ async function startApp(user, db) {
         }, 2500);
     };
 
-    const renderStagedTags = () => {
-        const container = document.getElementById('staged-tags-container');
-        if (!container) return;
-        if (newMomentTags.length === 0) { container.innerHTML = ''; return; }
-        const tagsHTML = newMomentTags.map((tag, index) => `<span class="new-moment-tag" data-index="${index}">#${tag}<button class="delete-tag-btn">&times;</button></span>`).join('');
-        container.innerHTML = `<div class="moment-tags" style="padding: 1rem; justify-content: flex-start;">${tagsHTML}</div>`;
-    };
-
     const openAddTagsModal = () => {
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay';
@@ -781,7 +843,7 @@ async function startApp(user, db) {
         document.body.appendChild(modalOverlay);
         renderNewMomentTags();
         const tagsInput = modalOverlay.querySelector('#new-tags-input');
-        const closeModal = () => { modalOverlay.remove(); renderStagedTags(); };
+        const closeModal = () => { modalOverlay.remove(); renderMomentMeta(); };
         const addTag = () => {
             if (!tagsInput) return;
             const newTag = tagsInput.value.trim().replace(/#/g, '');
@@ -803,71 +865,6 @@ async function startApp(user, db) {
         });
         if (tagsInput) {
             tagsInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); addTag(); } });
-        }
-    };
-
-    const renderNewMomentTags = () => {
-        const displayDiv = document.querySelector('.new-moment-tags-display');
-        if (!displayDiv) return;
-        displayDiv.innerHTML = newMomentTags.map((tag, index) => `<span class="new-moment-tag" data-index="${index}">#${tag}<button class="delete-tag-btn">&times;</button></span>`).join('');
-    };
-
-    const openAddMomentModal = (personId) => {
-        newMomentTags = [];
-        stagedMomentDate = null;
-        const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay journal-modal';
-        modalOverlay.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>רגע חדש</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><form id="add-moment-form-modal"><textarea id="moment-text-input" placeholder="כתוב כאן משהו..." required></textarea><div id="staged-date-container"></div><div id="staged-tags-container"></div><div class="floating-form-buttons"><button type="button" id="toggle-date-btn" class="form-icon-btn" title="שינוי תאריך"><i class="fas fa-calendar-alt"></i></button><button type="button" id="add-tags-btn" class="form-icon-btn" title="הוסף תגיות"><i class="fas fa-hashtag"></i></button></div></form></div><div class="modal-footer"><button id="save-moment-btn" class="header-button">שמור רגע</button></div></div>`;
-        document.body.appendChild(modalOverlay);
-        const closeModal = () => modalOverlay.remove();
-        modalOverlay.querySelector('.modal-close-btn').addEventListener('click', closeModal);
-        modalOverlay.querySelector('#toggle-date-btn').addEventListener('click', openDatePickerModal);
-        modalOverlay.querySelector('#add-tags-btn').addEventListener('click', openAddTagsModal);
-        modalOverlay.querySelector('#save-moment-btn').addEventListener('click', async () => {
-            const momentText = modalOverlay.querySelector('#moment-text-input').value;
-            if (!momentText.trim()) { showToast("הרגע לא יכול להיות ריק."); return; }
-            const personIndex = allPeople.findIndex(p => p.id === personId);
-            if (personIndex !== -1) {
-                const customDate = stagedMomentDate || new Date().toLocaleDateString('en-CA');
-                const newMoment = { id: Date.now(), date: customDate, text: momentText, tags: [...newMomentTags] };
-                if (!allPeople[personIndex].moments) allPeople[personIndex].moments = [];
-                allPeople[personIndex].moments.unshift(newMoment);
-                await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                showToast("הרגע נשמר בהצלחה!");
-                closeModal();
-                renderPersonDetail(personId);
-            }
-        });
-        modalOverlay.querySelector('#staged-tags-container').addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-tag-btn')) {
-                const index = parseInt(event.target.parentElement.dataset.index, 10);
-                newMomentTags.splice(index, 1);
-                renderStagedTags();
-            }
-        });
-        renderStagedDate();
-        renderStagedTags();
-    };
-
-    const addPersonDetailEventListeners = (personId) => {
-        document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
-        document.getElementById('show-add-moment-modal').addEventListener('click', () => openAddMomentModal(personId));
-        const momentSearchInput = document.getElementById('moment-search-bar');
-        if (momentSearchInput) {
-            momentSearchInput.addEventListener('input', (event) => {
-                const searchTerm = event.target.value;
-                const person = allPeople.find(p => p.id === personId);
-                if (person) renderFilteredMoments(person, searchTerm);
-            });
-        }
-        const momentsList = document.querySelector('.moments-list');
-        if (momentsList) {
-            momentsList.addEventListener('click', async (event) => {
-                const momentCard = event.target.closest('.journal-moment-card');
-                if (!momentCard) return;
-                const momentId = parseInt(momentCard.dataset.momentId, 10);
-                openEditMomentModal(personId, momentId);
-            });
         }
     };
 

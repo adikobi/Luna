@@ -846,49 +846,144 @@
     animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-/* --- Journal Modal --- */
-.modal-overlay.journal-modal {
-    background-color: #000;
-    align-items: stretch; /* Full height */
+/* --- Journal Modal (Isolated & Final) --- */
+.journal-modal-overlay {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000 !important;
+    display: flex;
+    flex-direction: column;
+    z-index: 2000 !important;
+    padding: 0 !important;
+    justify-content: flex-start;
+    align-items: stretch;
 }
 
-.journal-modal .modal-content {
+.journal-modal-overlay .modal-content {
     background-color: #000;
     color: #fff;
     width: 100%;
-    max-width: 100%;
     height: 100%;
     border-radius: 0;
     display: flex;
     flex-direction: column;
+    padding: 0;
+    box-shadow: none;
 }
 
-.journal-modal .modal-header {
+.journal-modal-overlay .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
     border-bottom: 1px solid #333;
 }
 
-.journal-modal .modal-header h2 {
-    color: #fff;
+.journal-modal-overlay .header-side {
+    flex: 1;
 }
 
-.journal-modal .modal-close-btn {
-    color: #fff;
+.journal-modal-overlay .header-side.left {
+    display: flex;
+    justify-content: flex-start;
+}
+.journal-modal-overlay .header-side.right {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 
-.journal-modal .modal-body {
+.journal-modal-overlay .modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.journal-modal-overlay .modal-title-center {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.journal-modal-overlay .header-button.save-icon,
+.journal-modal-overlay .header-button.danger-icon {
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    padding: 0.5rem;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--text-primary);
+}
+
+.journal-modal-overlay .header-button.save-icon {
+    color: var(--accent-green);
+}
+.journal-modal-overlay .header-button.save-icon:hover {
+    background-color: rgba(167, 215, 197, 0.1);
+}
+
+.journal-modal-overlay .header-button.danger-icon {
+    color: var(--accent-pink);
+}
+.journal-modal-overlay .header-button.danger-icon:hover {
+    background-color: rgba(230, 164, 180, 0.1);
+}
+
+.journal-modal-overlay .moment-meta-bar {
+    display: flex;
+    justify-content: space-around;
+    background-color: var(--background-secondary);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.journal-modal-overlay .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.journal-modal-overlay .meta-item:hover {
+    color: var(--text-primary);
+}
+
+.journal-modal-overlay .meta-item .fa-calendar-alt { color: var(--accent-yellow); }
+.journal-modal-overlay .meta-item .fa-hashtag { color: var(--accent-green); }
+.journal-modal-overlay .meta-item span { font-size: 0.9rem; }
+.journal-modal-overlay .meta-item .tags-display {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.journal-modal-overlay .modal-body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    padding: 1rem;
 }
 
-.journal-modal #add-moment-form-modal {
+.journal-modal-overlay #add-moment-form-modal {
     flex-grow: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Ensure form is a column */
 }
 
-.journal-modal #moment-text-input {
-    flex-grow: 1;
+.journal-modal-overlay #moment-text-input {
+    flex-grow: 1; /* Make textarea fill the space */
     background-color: #000;
     color: #fff;
     border: none;
@@ -897,16 +992,9 @@
     resize: none;
 }
 
-.journal-modal .modal-footer {
-    border-top: 1px solid #333;
-}
-
-.journal-modal #save-moment-btn {
-    background-color: var(--primary-action);
-    color: var(--text-on-accent);
-}
-.journal-modal #save-moment-btn:hover {
-    background-color: var(--tertiary-action);
+.journal-modal-overlay #moment-text-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .view-moment-header {
