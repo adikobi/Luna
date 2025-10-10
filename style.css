@@ -107,13 +107,46 @@
       background-color: var(--primary-action);
   }
 
-  /* --- Person Card --- */
-  .person-card { background-color: var(--background-secondary); border-radius: 8px; padding: 1rem; text-align: center; transition: transform 0.2s; cursor: pointer; animation: fadeIn 0.5s; }
-  .person-card:hover { transform: translateY(-5px); }
-  .person-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 1rem; }
-  .person-card h3 { font-size: 1.1rem; font-weight: 700; word-wrap: break-word; color: var(--text-primary); }
-  .default-avatar { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto; background-color: var(--primary-action); }
-  .default-avatar .fas { font-size: 50px; color: var(--text-on-accent); opacity: 0.8; }
+  /* --- Person Card (Redesigned) --- */
+  .people-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1.5rem;
+  }
+  .person-card {
+      background-color: transparent;
+      padding: 0;
+      text-align: center;
+      transition: transform 0.2s;
+      cursor: pointer;
+      animation: fadeIn 0.5s;
+      border: none;
+      border-radius: 0;
+  }
+  .person-card:hover {
+      transform: scale(1.05);
+  }
+  .person-card img, .default-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 0.5rem;
+      border: 2px solid var(--border-color);
+  }
+  .person-card h3 {
+      font-size: 0.9rem;
+      font-weight: 400;
+      word-wrap: break-word;
+      color: var(--text-secondary);
+  }
+  .default-avatar {
+      margin: 0 auto 0.5rem auto;
+  }
+  .default-avatar .fas {
+      font-size: 40px;
+      color: var(--text-on-accent);
+      opacity: 0.8;
+  }
 
   /* --- Form --- */
   .form-container { max-width: 500px; margin: 0 auto; background-color: var(--background-secondary); padding: 2rem; border-radius: 8px; animation: fadeIn 0.5s; }
@@ -995,6 +1028,48 @@
 .journal-modal-overlay #moment-text-input:focus {
     outline: none !important;
     box-shadow: none !important;
+}
+
+/* --- Detail View Redesign --- */
+.floating-nav {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    justify-content: space-between;
+    z-index: 100;
+    pointer-events: none; /* Allow clicks to pass through the container */
+}
+
+.floating-btn {
+    background-color: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background-color 0.2s;
+    pointer-events: auto; /* Make buttons clickable */
+}
+
+.floating-btn:hover {
+    background-color: rgba(50, 50, 50, 0.9);
+}
+
+.floating-btn.back-btn {
+    transform: scaleX(-1); /* Flip the '>' icon */
+}
+
+#app-main.detail-main {
+    padding-top: 6rem; /* Add padding to prevent content from hiding under the floating nav */
 }
 
 .view-moment-header {

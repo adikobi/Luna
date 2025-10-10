@@ -290,38 +290,12 @@ async function startApp(user, db) {
         const grid = document.getElementById('people-grid');
         if (!grid) return;
 
-        const pinnedPeople = peopleToRender.filter(p => p.pinned);
-        const unpinnedPeople = peopleToRender.filter(p => !p.pinned);
-
-        let gridHTML = '';
-
-        if (pinnedPeople.length > 0) {
-            gridHTML += '<h2 class="grid-section-header">נעוצים</h2>';
-            gridHTML += '<div class="people-grid-section">';
-            gridHTML += pinnedPeople.map(person => renderPersonCard(person)).join('');
-            gridHTML += '</div>';
-        }
-
-        if (unpinnedPeople.length > 0) {
-            if (pinnedPeople.length > 0) {
-                 gridHTML += '<h2 class="grid-section-header" style="margin-top: 2rem;">אנשי קשר</h2>';
-            }
-            gridHTML += '<div class="people-grid-section">';
-            gridHTML += unpinnedPeople.map(person => renderPersonCard(person)).join('');
-            gridHTML += '</div>';
-        }
-
         if (peopleToRender.length === 0) {
             grid.innerHTML = `<p class="no-results">לא נמצאו אנשי קשר. לחץ על '+' כדי להוסיף.</p>`;
         } else {
-            grid.innerHTML = gridHTML;
+            grid.innerHTML = peopleToRender.map(person => renderPersonCard(person)).join('');
             document.querySelectorAll('.person-card').forEach(card => {
                 card.addEventListener('click', handleCardClick);
-                card.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    const personId = parseInt(e.currentTarget.dataset.personId, 10);
-                    showPersonContextMenu(e.clientX, e.clientY, personId);
-                });
             });
         }
     };
@@ -329,82 +303,11 @@ async function startApp(user, db) {
     const renderPersonCard = (person) => {
         const color = avatarColor;
         const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}">` : `<div class="default-avatar" style="background-color: ${color};"><i class="fas fa-user"></i></div>`;
-        const pinnedIcon = person.pinned ? `<i class="fas fa-thumbtack pinned-icon"></i>` : '';
         return `
             <div class="person-card" data-person-id="${person.id}">
-                ${pinnedIcon}
                 ${avatarHTML}
                 <h3>${person.name}</h3>
             </div>`;
-    };
-
-    const showPersonContextMenu = (x, y, personId) => {
-        closeContextMenu(); // Close any existing menu
-
-        const person = allPeople.find(p => p.id === personId);
-        if (!person) return;
-
-        const menu = document.createElement('div');
-        menu.id = 'person-context-menu';
-        menu.style.top = `${y}px`;
-        menu.style.left = `${x}px`;
-
-        const pinActionText = person.pinned ? 'הסר נעירה' : 'נעץ בראש';
-
-        menu.innerHTML = `
-            <ul>
-                <li data-action="pin">${pinActionText}</li>
-                <li data-action="edit">ערוך</li>
-                <li data-action="delete" class="danger">מחק</li>
-            </ul>
-        `;
-
-        document.body.appendChild(menu);
-
-        menu.addEventListener('click', async (e) => {
-            const action = e.target.dataset.action;
-            if (!action) return;
-
-            switch (action) {
-                case 'pin':
-                    await togglePinPerson(personId);
-                    break;
-                case 'edit':
-                    renderEditPersonForm(personId);
-                    break;
-                case 'delete':
-                    if (confirm(`האם למחוק את ${person.name} וכל הרגעים שלו?`)) {
-                        allPeople = allPeople.filter(p => p.id !== personId);
-                        await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-                        await renderAppShell();
-                    }
-                    break;
-            }
-            closeContextMenu();
-        });
-
-        // Close menu when clicking elsewhere
-        setTimeout(() => {
-            document.addEventListener('click', closeContextMenu, { once: true });
-        }, 0);
-    };
-
-    const togglePinPerson = async (personId) => {
-        const personIndex = allPeople.findIndex(p => p.id === personId);
-        if (personIndex !== -1) {
-            allPeople[personIndex].pinned = !allPeople[personIndex].pinned;
-            allPeople.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-            await saveData(isHiddenMode ? 'hiddenPeople' : 'people', allPeople);
-            renderPeopleGrid(allPeople);
-        }
-    };
-
-    const closeContextMenu = () => {
-        const menu = document.getElementById('person-context-menu');
-        if (menu) {
-            menu.remove();
-        }
-        document.removeEventListener('click', closeContextMenu);
     };
 
     const renderNewPersonForm = (personToEdit = null) => {
@@ -515,10 +418,21 @@ async function startApp(user, db) {
     const renderPersonDetail = async (personId) => {
         const person = allPeople.find(p => p.id === personId);
         if (!person) { await renderAppShell(); return; }
-        const color = avatarColor;
-        const avatarHTML = person.image ? `<img src="${person.image}" alt="${person.name}" class="detail-avatar-img">` : `<div class="default-avatar detail-avatar-icon" style="background-color: ${color}"><i class="fas fa-user"></i></div>`;
 
-        appContainer.innerHTML = `<header class="app-header detail-header"><button id="back-to-grid" class="back-button">&larr; חזרה</button><h1>${person.name}</h1><div></div></header><main id="app-main"><div class="person-detail-header">${avatarHTML}</div><section class="moments-section"><h2>רגעים</h2><div class="moment-search-container"><input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים..."></div><div id="moment-list-container"><ul class="moments-list"></ul></div></section></main><div class="fab-container"><button id="show-add-moment-modal" class="fab" title="הוסף רגע חדש">+</button></div>`;
+        appContainer.innerHTML = `
+            <div class="floating-nav">
+                <button id="back-to-grid" class="floating-btn back-btn">&gt;</button>
+                <button id="toggle-search-btn" class="floating-btn search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <main id="app-main" class="detail-main">
+                <div id="moment-search-container" class="moment-search-container" style="display: none;">
+                    <input type="search" id="moment-search-bar" placeholder="חיפוש ברגעים...">
+                </div>
+                <div id="moment-list-container"><ul class="moments-list"></ul></div>
+            </main>
+            <div class="fab-container">
+                <button id="show-add-moment-modal" class="fab" title="הוסף רגע חדש">+</button>
+            </div>`;
 
         const momentsListUL = appContainer.querySelector('.moments-list');
         renderSkeletonMoments(momentsListUL, 5);
@@ -750,14 +664,25 @@ async function startApp(user, db) {
     const addPersonDetailEventListeners = (personId) => {
         document.getElementById('back-to-grid').addEventListener('click', renderAppShell);
         document.getElementById('show-add-moment-modal').addEventListener('click', () => openAddMomentModal(personId));
-        const momentSearchInput = document.getElementById('moment-search-bar');
-        if (momentSearchInput) {
-            momentSearchInput.addEventListener('input', (event) => {
-                const searchTerm = event.target.value;
-                const person = allPeople.find(p => p.id === personId);
-                if (person) renderFilteredMoments(person, searchTerm);
-            });
-        }
+
+        const searchContainer = document.getElementById('moment-search-container');
+        const searchInput = document.getElementById('moment-search-bar');
+        const toggleSearchBtn = document.getElementById('toggle-search-btn');
+
+        toggleSearchBtn.addEventListener('click', () => {
+            const isVisible = searchContainer.style.display !== 'none';
+            searchContainer.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                searchInput.focus();
+            }
+        });
+
+        searchInput.addEventListener('input', (event) => {
+            const searchTerm = event.target.value;
+            const person = allPeople.find(p => p.id === personId);
+            if (person) renderFilteredMoments(person, searchTerm);
+        });
+
         const momentsList = document.querySelector('.moments-list');
         if (momentsList) {
             momentsList.addEventListener('click', async (event) => {
